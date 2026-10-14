@@ -22,6 +22,7 @@
       <button type="button" data-edition="uk" aria-pressed="false">UK</button>
       <button type="button" data-edition="us" aria-pressed="false">US</button>
       <button type="button" data-edition="au" aria-pressed="false">Australia</button>
+      <button type="button" data-edition="europe" aria-pressed="false">Europe</button>
       <button type="button" data-edition="international" aria-pressed="false">International</button>
     </nav>
     <button type="button" class="ghost" id="knows-open">What this page knows</button>
@@ -49,15 +50,11 @@
     </div>
   </section>
 
-  <section class="ticker-section" aria-labelledby="ticker-h">
+  <section class="moving" aria-labelledby="moving-h">
     <div class="wrap">
-      <h2 class="eyebrow" id="ticker-h">The state of play</h2>
-      <p class="muted small">Key events from the day’s live blogs, newest first. The blogs themselves are long; this is only what the writers marked as mattering.</p>
-    </div>
-    <div class="ticker" id="ticker" aria-label="Latest key events"></div>
-    <div class="wrap">
-      <button type="button" class="ghost" id="events-toggle" aria-expanded="false" aria-controls="events-list">Show all events</button>
-      <div id="events-list" class="events" hidden></div>
+      <h2 id="moving-h">Still moving</h2>
+      <div class="board" id="board" aria-roledescription="carousel" aria-label="Key events from today’s live blogs"></div>
+      <div class="blogs" id="blogs"></div>
     </div>
   </section>
 
@@ -81,12 +78,22 @@
     </div>
   </section>
 
+  <section class="world-section" aria-labelledby="world-h">
+    <div class="wrap">
+      <h2 id="world-h">Around the world</h2>
+      <p class="muted">Ten stories from ten places, the same whichever edition you read.</p>
+      <div class="world-grid">
+        <div class="map-box" id="map"></div>
+        <ol class="world-list" id="world-list"></ol>
+      </div>
+    </div>
+  </section>
+
   <section class="desks-section" aria-labelledby="desks-h">
     <div class="wrap">
-      <h2 id="desks-h">Four desks</h2>
-      <p class="muted">The Guardian runs four fronts, edited by people in London, New York and Sydney, plus one for everyone else. They do not agree. Pick a pin to switch edition.</p>
-      <div class="map-box" id="map"></div>
-      <div class="desks" id="desks"></div>
+      <h2 id="desks-h" class="eyebrow">From the other desks</h2>
+      <p class="muted small">The top story each other edition is running that yours is not.</p>
+      <ul class="desks" id="desks"></ul>
     </div>
   </section>
 

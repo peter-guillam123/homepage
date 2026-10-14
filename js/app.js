@@ -1,21 +1,25 @@
 // Daylight: a Guardian homepage for people who come once a day.
 import { buildSnapshot, urlFor, EDITIONS } from './snapshot.js';
-import { choose, reasonText, readingMinutes, EDITION_NAMES } from './choose.js';
+import { choose, reasonText, readingMinutes, otherDesks, EDITION_NAMES } from './choose.js';
 import { headlineBrief } from './brief.js';
 import { renderStrip } from './strip.js';
 import { renderTicker, esc } from './ticker.js';
-import { renderMap } from './map.js';
+import { renderWorld } from './world.js';
 import { store } from './store.js';
 import { CITIES } from './sun.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const fmtDate = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+const fmtDayNum = new Intl.DateTimeFormat('en-GB', { day: 'numeric' });
+const fmtWeekday = new Intl.DateTimeFormat('en-GB', { weekday: 'long' });
+const fmtMonth = new Intl.DateTimeFormat('en-GB', { month: 'long' });
 const fmtTime = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
 const fmtWhen = new Intl.DateTimeFormat('en-GB', { weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: false });
 
 // Sections that are never 'further afield'. They are the front.
-const NEAR = new Set(['politics', 'uk-news', 'us-news', 'world', 'australia-news', 'business', 'commentisfree', 'thefilter']);
+const NEAR = new Set(['politics', 'uk-news', 'us-news', 'world', 'australia-news', 'business', 'commentisfree', 'society', 'law', 'media', 'education', 'money']);
+const isShop = (it) => (it.sectionId || '').startsWith('thefilter');
 
 const state = { snap: null, dots: null, edition: null, budget: null, visit: null, random: {} };
 
@@ -80,13 +84,6 @@ function wireControls() {
     store.set({ budget: state.budget });
     renderWorth();
   }));
-  $('#events-toggle').addEventListener('click', () => {
-    const list = $('#events-list');
-    const open = list.hidden;
-    list.hidden = !open;
-    $('#events-toggle').setAttribute('aria-expanded', String(open));
-    $('#events-toggle').textContent = open ? 'Hide the full list' : `Show all ${state.snap.ticker.length} events`;
-  });
   $$('[data-another]').forEach(btn => btn.addEventListener('click', () => { state.random[btn.dataset.another] = Math.random(); renderOff(); }));
   $('#knows-open').addEventListener('click', () => { renderKnows(); $('#knows').showModal(); });
   $('#knows-close').addEventListener('click', () => $('#knows').close());
@@ -119,9 +116,9 @@ function render() {
   renderHead();
   state.chosen = choose(snap, edition, 8);
   renderStrip($('#strip'), { snap, edition, chosen: state.chosen, lastVisit: state.visit.last });
-  $('#strip-caption').innerHTML = `<span class="muted">Light over ${esc(CITIES[edition].name)}, ${snap.counts.published24h} ticks, ${state.chosen.length} points. Hover or tab to a point.</span>`;
+  $('#strip-caption').innerHTML = `<span class="muted">Real light over ${esc(CITIES[edition].name)}. Bars: pieces published every 20 minutes, by pillar. Points: the eight below.</span>`;
   renderBrief();
-  renderTicker($('#ticker'), $('#events-list'), snap.ticker, { lastVisit: state.visit.last });
+  renderTicker($('#board'), $('#blogs'), snap.ticker, { lastVisit: state.visit.last });
   renderWorth();
   renderDesks();
   renderOff();
@@ -131,7 +128,8 @@ function render() {
 function renderHead() {
   const { snap } = state;
   const taken = new Date(snap.takenAt);
-  $('#today').textContent = fmtDate.format(taken);
+  $('#today').innerHTML = `<span class="day-num">${fmtDayNum.format(taken)}</span><span class="day-rest"><span>${fmtWeekday.format(taken)}</span><span>${fmtMonth.format(taken)}</span></span>`;
+  $('#today').setAttribute('aria-label', fmtDate.format(taken));
   const last = state.visit.last;
   const from = new Date(snap.window.from).getTime();
   let since;
@@ -202,39 +200,30 @@ function renderWorth() {
 
 function renderDesks() {
   const { snap, edition, dots } = state;
-  renderMap($('#map'), dots, { snap, edition, onEdition: setEdition });
-  $('#desks').innerHTML = EDITIONS.map(ed => {
-    const picks = snap.editions[ed].picks.slice(0, 5);
-    return `<section class="desk${ed === edition ? ' is-current' : ''}" id="desk-${ed}" aria-labelledby="desk-h-${ed}">
-      <h3 id="desk-h-${ed}">${EDITION_NAMES[ed]}<span class="muted"> · ${esc(CITIES[ed].name)}</span></h3>
-      <ol>${picks.map(id => {
-        const it = snap.items[id];
-        const also = EDITIONS.filter(o => o !== ed && snap.editions[o].picks.includes(id));
-        const mark = also.length === 3 ? 'everywhere' : also.length ? `also ${also.map(o => EDITION_NAMES[o]).join(', ')}` : 'only here';
-        return `<li class="p-${it.pillar || 'none'}" data-id="${esc(id)}"><a href="${urlFor(id)}" data-id="${esc(id)}">${esc(it.title)}</a><span class="mark${also.length ? '' : ' mark-only'}">${mark}</span></li>`;
-      }).join('')}</ol>
-    </section>`;
-  }).join('');
-  $$('#desks li[data-id]').forEach(li => {
-    const same = () => $$(`#desks li[data-id="${CSS.escape(li.dataset.id)}"]`);
-    li.addEventListener('mouseenter', () => same().forEach(x => x.classList.add('is-linked')));
-    li.addEventListener('mouseleave', () => same().forEach(x => x.classList.remove('is-linked')));
-  });
+  const world = renderWorld($('#map'), $('#world-list'), dots, snap);
+  const others = otherDesks(snap, edition);
+  state.shownElsewhere = [...world.map(w => w.id), ...others.map(o => o.id)];
+  $('#desks').innerHTML = others.map(o => `
+    <li class="desk p-${o.pillar || 'none'}">
+      <p class="desk-h">${EDITION_NAMES[o.edition]} <span class="muted">· ${esc(CITIES[o.edition].name)}</span></p>
+      <h3><a href="${urlFor(o.id)}" data-id="${esc(o.id)}">${esc(o.title)}</a></h3>
+      <p class="mark${o.elsewhere.length ? '' : ' mark-only'}">${o.elsewhere.length ? 'also on the ' + o.elsewhere.map(e => EDITION_NAMES[e]).join(' and ') + ' front' : 'only on this front'}</p>
+    </li>`).join('');
 }
 
 function renderOff() {
   const { snap, chosen } = state;
-  const chosenIds = new Set(chosen.map(p => p.id));
+  const shown = new Set([...chosen.map(p => p.id), ...(state.shownElsewhere || [])]);
   const chosenSections = new Set(chosen.map(p => p.sectionId));
   const pickFrom = (list, seed) => list.length ? list[Math.floor(seeded(seed) * list.length)] : null;
 
-  const long = snap.pools.long.filter(id => !chosenIds.has(id) && !NEAR.has(snap.items[id].sectionId) && snap.items[id].kind !== 'Review' && snap.items[id].sectionId !== 'thefilter');
-  const quiet = snap.pools.quiet.filter(id => !chosenIds.has(id));
+  const long = snap.pools.long.filter(id => !shown.has(id) && !NEAR.has(snap.items[id].sectionId) && snap.items[id].kind !== 'Review' && !isShop(snap.items[id]));
+  const quiet = snap.pools.quiet.filter(id => !shown.has(id) && !isShop(snap.items[id]));
   const bySection = new Map();
   for (const id of snap.day) { const it = snap.items[id]; bySection.set(it.sectionId, (bySection.get(it.sectionId) || 0) + 1); }
   const afield = snap.day.filter(id => {
     const it = snap.items[id];
-    return it.type === 'article' && it.kind !== 'Live' && (it.words || 0) >= 500 && !chosenSections.has(it.sectionId) && !NEAR.has(it.sectionId) && !chosenIds.has(id);
+    return it.type === 'article' && it.pillar !== 'news' && it.kind !== 'Live' && (it.words || 0) >= 500 && !chosenSections.has(it.sectionId) && !NEAR.has(it.sectionId) && !shown.has(id) && !isShop(it);
   }).sort((a, b) => bySection.get(snap.items[a].sectionId) - bySection.get(snap.items[b].sectionId)).slice(0, 40);
 
   card('surprise', pickFrom(long, 'surprise'), 'A long read from the past week, picked at random.');
