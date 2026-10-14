@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daylight</title>
+<meta name="description" content="A Guardian homepage for people who come once a day. Automated from the signals the Guardian already has, built to end.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,0..100;1,9..144,300..700,0..100&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23e8a33d'/%3E%3C/svg%3E">
+</head>
+<body>
+<a class="skip" href="#worth">Skip to the pieces</a>
+
+<header class="top">
+  <div class="wrap top-row">
+    <p class="wordmark"><a href="./">Daylight</a> <span class="strap">The Guardian, once a day</span></p>
+    <nav class="editions" id="editions" aria-label="Edition">
+      <button type="button" data-edition="uk" aria-pressed="false">UK</button>
+      <button type="button" data-edition="us" aria-pressed="false">US</button>
+      <button type="button" data-edition="au" aria-pressed="false">Australia</button>
+      <button type="button" data-edition="international" aria-pressed="false">International</button>
+    </nav>
+    <button type="button" class="ghost" id="knows-open">What this page knows</button>
+  </div>
+</header>
+
+<p id="status" class="wrap notice" hidden></p>
+<p id="stale" class="wrap notice" hidden></p>
+
+<main>
+  <section class="hero" aria-labelledby="today">
+    <div class="wrap">
+      <p class="eyebrow">Today</p>
+      <h1 id="today">Loading the day</h1>
+      <p class="since" id="since"></p>
+    </div>
+    <div class="wrap">
+      <div id="strip" class="strip-box"></div>
+      <p class="strip-caption" id="strip-caption" aria-live="polite"></p>
+    </div>
+    <div class="wrap">
+      <h2 class="eyebrow">The brief</h2>
+      <p class="brief" id="brief"></p>
+      <p class="muted small" id="brief-method"></p>
+    </div>
+  </section>
+
+  <section class="ticker-section" aria-labelledby="ticker-h">
+    <div class="wrap">
+      <h2 class="eyebrow" id="ticker-h">The state of play</h2>
+      <p class="muted small">Key events from the day’s live blogs, newest first. The blogs themselves are long; this is only what the writers marked as mattering.</p>
+    </div>
+    <div class="ticker" id="ticker" aria-label="Latest key events"></div>
+    <div class="wrap">
+      <button type="button" class="ghost" id="events-toggle" aria-expanded="false" aria-controls="events-list">Show all events</button>
+      <div id="events-list" class="events" hidden></div>
+    </div>
+  </section>
+
+  <section class="worth" id="worth" aria-labelledby="worth-h">
+    <div class="wrap">
+      <div class="worth-head">
+        <div>
+          <h2 id="worth-h">Worth your time</h2>
+          <p class="muted">Eight pieces, chosen by the editors and kept by readers. Each says why it is here.</p>
+        </div>
+        <div class="budget" role="group" aria-label="How long have you got?">
+          <span class="budget-label">I have</span>
+          <button type="button" data-budget="10" aria-pressed="false">10 min</button>
+          <button type="button" data-budget="20" aria-pressed="false">20 min</button>
+          <button type="button" data-budget="40" aria-pressed="false">40 min</button>
+          <button type="button" data-budget="all" aria-pressed="true">all day</button>
+        </div>
+      </div>
+      <p class="worth-sum muted" id="worth-sum"></p>
+      <ol class="pieces" id="worth-list"></ol>
+    </div>
+  </section>
+
+  <section class="desks-section" aria-labelledby="desks-h">
+    <div class="wrap">
+      <h2 id="desks-h">Four desks</h2>
+      <p class="muted">The Guardian runs four fronts, edited by people in London, New York and Sydney, plus one for everyone else. They do not agree. Pick a pin to switch edition.</p>
+      <div class="map-box" id="map"></div>
+      <div class="desks" id="desks"></div>
+    </div>
+  </section>
+
+  <section class="off" aria-labelledby="off-h">
+    <div class="wrap">
+      <h2 id="off-h">Off the front</h2>
+      <p class="muted">Three doors out of the news cycle. Each button opens another.</p>
+      <div class="cards">
+        <article class="card" id="off-surprise">
+          <h3 class="card-h">Surprise me</h3>
+          <div class="card-body"></div>
+          <button type="button" class="ghost" data-another="surprise">Another</button>
+        </article>
+        <article class="card" id="off-afield">
+          <h3 class="card-h">Further afield</h3>
+          <div class="card-body"></div>
+          <button type="button" class="ghost" data-another="afield">Another</button>
+        </article>
+        <article class="card" id="off-quiet">
+          <h3 class="card-h">A quieter piece</h3>
+          <div class="card-body"></div>
+          <button type="button" class="ghost" data-another="quiet">Another</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="end" aria-labelledby="end-h">
+    <div class="wrap">
+      <h2 id="end-h">That’s the day.</h2>
+      <p class="end-sub">Come back tomorrow. If you want the rest, <a href="https://www.theguardian.com/">the Guardian has all of it</a>.</p>
+      <p class="muted small" id="taken"></p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><a href="about.html">About Daylight</a> · A sketch by Chris Moran, built with Claude. Not a Guardian product. Stories link to theguardian.com.</p>
+  </div>
+</footer>
+
+<dialog id="knows" aria-labelledby="knows-h">
+  <form method="dialog" class="knows-form">
+    <h2 id="knows-h">What this page knows</h2>
+    <p class="muted">All of it is stored in your browser, and only there. There is no account, no cookie and nothing is sent anywhere.</p>
+    <dl id="knows-list" class="knows-list"></dl>
+    <button type="submit" class="ghost" id="knows-close">Close</button>
+    <button type="button" class="danger" id="forget">Forget everything</button>
+  </form>
+  <form id="key-form" class="key-form">
+    <h3>Fetch it live</h3>
+    <p class="muted small">If you have a Guardian Content API key, paste it here and the page will fetch the last 24 hours itself, straight from the API, each time it loads. The key stays in your browser.</p>
+    <label for="key-input">Content API key</label>
+    <input id="key-input" type="password" autocomplete="off" spellcheck="false">
+    <button type="submit" class="ghost">Save and reload</button>
+  </form>
+</dialog>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
