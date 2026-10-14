@@ -1,0 +1,14 @@
+{
+  "name": "daylight",
+  "private": true,
+  "type": "module",
+  "description": "A Guardian homepage for people who come once a day. A sketch.",
+  "scripts": {
+    "snapshot": "node scripts/build-snapshot.mjs",
+    "world": "node scripts/build-world-dots.mjs",
+    "serve": "python3 -m http.server 8765"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.120.0"
+  }
+}
