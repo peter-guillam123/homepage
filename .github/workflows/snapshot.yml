@@ -1,0 +1,77 @@
+name: Refresh the snapshot
+
+# Every hour, fetch the last 24 hours from the Guardian Content API,
+# commit the snapshot if it changed, and publish the site.
+# Needs the GUARDIAN_API_KEY secret. ANTHROPIC_API_KEY is optional:
+# with it, Claude writes the brief; without it, the brief is stitched from headlines.
+
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Check for the key
+        id: key
+        run: |
+          if [ -z "${{ secrets.GUARDIAN_API_KEY }}" ]; then
+            echo "No GUARDIAN_API_KEY secret. Skipping the refresh."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.key.outputs.present == 'true'
+        with:
+          node-version: 22
+      - name: Install the SDK for the brief
+        if: steps.key.outputs.present == 'true' && env.ANTHROPIC_API_KEY != ''
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+      - name: Build the snapshot
+        if: steps.key.outputs.present == 'true'
+        env:
+          GUARDIAN_API_KEY: ${{ secrets.GUARDIAN_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/build-snapshot.mjs
+      - name: Commit if it changed
+        if: steps.key.outputs.present == 'true'
+        run: |
+          git config user.name "daylight-bot"
+          git config user.email "daylight-bot@users.noreply.github.com"
+          git add data/snapshot.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+          else
+            git commit -m "Refresh snapshot $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
