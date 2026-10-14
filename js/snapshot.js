@@ -2,14 +2,19 @@
 // Runs in Node (scripts/build-snapshot.mjs) and in the browser (live mode).
 // Pass a fetchJson(url) function and, optionally, an API key.
 
+import { placeOf } from './places.js';
+
 const API = 'https://content.guardianapis.com';
 export const SITE = 'https://www.theguardian.com/';
 export const urlFor = (id) => SITE + id;
 export const tickerUrl = (t) => `${SITE}${t.blogId}?page=with:block-${t.block}#block-${t.block}`;
-export const EDITIONS = ['uk', 'us', 'au', 'international'];
+export const EDITIONS = ['uk', 'us', 'au', 'europe', 'international'];
 
 const FIELDS = 'headline,trailText,thumbnail,wordcount,byline,lastModified';
-const TAGS = 'tone,type,series';
+const TAGS = 'tone,type,series,keyword';
+
+// Tags too broad to name a live blog by.
+const GENERIC_TAGS = new Set(['world/europe-news', 'football/europeanfootball', 'us-news/us-politics', 'politics/politics', 'uk/uk', 'world/world', 'business/economics', 'sport/sport']);
 
 const QUIET_SECTIONS = [
   'lifeandstyle', 'food', 'travel', 'books', 'film', 'music', 'games',
@@ -49,11 +54,17 @@ function compact(r) {
     published: r.webPublicationDate,
     words: f.wordcount ? Number(f.wordcount) : null,
     kind: toneOf(tags),
+    place: placeOf(tags.map(t => t.id), r.sectionId) || undefined,
     longRead: tags.some(t => t.id === 'news/series/the-long-read'),
     trail: f.trailText ? stripHtml(f.trailText).slice(0, 220) : undefined,
     byline: f.byline || undefined,
     thumb: f.thumbnail || undefined,
   };
+}
+
+function trimWords(s, max) {
+  if (s.length <= max) return s;
+  return s.slice(0, max).replace(/\s+\S*$/, '') + '…';
 }
 
 function stripHtml(s) { return s.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(); }
@@ -111,21 +122,33 @@ export async function buildSnapshot({ fetchJson, apiKey = null, now = new Date()
   log('ticker: live blog key events');
   const live = await q('/search', {
     'tag': 'tone/minutebyminute', 'from-date': iso(dayAgo), 'page-size': '30',
-    'order-by': 'newest', 'show-blocks': 'body:key-events', 'show-fields': 'headline',
+    'order-by': 'newest', 'show-blocks': 'body:key-events', 'show-fields': 'headline,liveBloggingNow', 'show-tags': 'keyword',
   });
   const ticker = [];
   for (const blog of live.response.results) {
+    const keywords = (blog.tags || []).filter(t => t.type === 'keyword');
+    const generic = (t) => { const [a, b] = t.id.split('/'); return a === b || GENERIC_TAGS.has(t.id); };
+    const topicTag = keywords.find(t => !generic(t));
+    const headline = (blog.fields && blog.fields.headline) || blog.webTitle;
+    const suffix = headline.match(/\s[–-]\s([^–-]+?)\s*$/);
+    let topic = suffix ? suffix[1].replace(/\b(live|as it happened|latest( news| updates)?)\b/gi, '').replace(/\s+/g, ' ').trim() : '';
+    if (!topic) topic = topicTag ? topicTag.webTitle : blog.sectionName;
+    topic = topic.charAt(0).toUpperCase() + topic.slice(1);
+    const isLive = Boolean(blog.fields && blog.fields.liveBloggingNow === 'true');
     const blocks = (blog.blocks && blog.blocks.requestedBodyBlocks && blog.blocks.requestedBodyBlocks['body:key-events']) || [];
     for (const b of blocks) {
       if (!b.title || !b.firstPublishedDate) continue;
+      if (/^(closing|opening|early) (summary|post)$/i.test(b.title.trim())) continue;
       if (new Date(b.firstPublishedDate) < dayAgo) continue;
       ticker.push({
         time: b.firstPublishedDate,
         title: stripHtml(b.title),
-        summary: b.bodyTextSummary ? stripHtml(b.bodyTextSummary).slice(0, 160) : null,
+        summary: b.bodyTextSummary ? trimWords(stripHtml(b.bodyTextSummary), 160) : null,
         blog: (blog.fields && blog.fields.headline) || blog.webTitle,
         blogId: blog.id,
         block: b.id,
+        topic,
+        live: isLive,
         section: blog.sectionName,
         pillar: (blog.pillarName || '').toLowerCase() || null,
       });

@@ -5,7 +5,8 @@ export const CITIES = {
   uk: { name: 'London', lat: 51.5, lon: -0.12 },
   us: { name: 'New York', lat: 40.7, lon: -74.0 },
   au: { name: 'Sydney', lat: -33.9, lon: 151.2 },
-  international: { name: 'Greenwich meridian', lat: 0, lon: 0 },
+  europe: { name: 'Paris', lat: 48.86, lon: 2.35 },
+  international: { name: 'Greenwich', lat: 51.48, lon: 0 },
 };
 
 const rad = (d) => d * Math.PI / 180;
