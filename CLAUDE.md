@@ -9,7 +9,7 @@ Public: yes. GitHub Pages, as a sketch, not a product.
 ## What it is
 
 A one-page site that rebuilds the homepage for a less frequent reader. The data comes from the
-Guardian Content API: editors' picks, deeply read and most viewed for the four edition fronts,
+Guardian Content API: editors' picks, deeply read and most viewed for the five edition fronts,
 every piece published in the last 24 hours, and the key events from the day's live blogs.
 No Ophan, no personalisation beyond what the browser remembers locally.
 
@@ -17,8 +17,10 @@ No Ophan, no personalisation beyond what the browser remembers locally.
 
 - `js/snapshot.js` builds the data. It runs in Node (`scripts/build-snapshot.mjs`, hourly in
   GitHub Actions) and in the browser, when a reader stores their own API key.
-- `js/choose.js` picks the eight pieces worth a reader's time and explains why. The page and
-  the brief script both use it, so they never disagree.
+- `js/choose.js` picks the eight pieces worth a reader's time and explains why, the ten for the
+  world map, the twelve ticker events and the other desks' stories. The page and the brief
+  script both use it, so they never disagree.
+- `js/places.js` maps the Guardian's country tags to coordinates for the world map.
 - `scripts/brief.mjs` writes the brief: Claude if `ANTHROPIC_API_KEY` is set, otherwise
   stitched headlines. The page says which.
 - `data/snapshot.json` is committed. `data/world-dots.json` is the dot map, built once from

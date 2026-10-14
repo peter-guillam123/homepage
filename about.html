@@ -39,17 +39,28 @@
 
   <h2>How it is made</h2>
 
-  <p>Everything on the page comes from the Guardian's Content API, which already knows what the editors chose for each of the four fronts, what readers viewed most, what they read deeply rather than just opened, and every piece published in the last 24 hours. No Ophan, no personalisation, no editor sitting behind it. The only human curation is the one the fronts editors already do, which the page borrows.</p>
+  <p>Everything on the page comes from the Guardian's Content API, which already knows what the editors chose for each of the five fronts, what readers viewed most, what they read deeply rather than just opened, and every piece published in the last 24 hours. No Ophan, no personalisation, no editor sitting behind it. The only human curation is the one the fronts editors already do, which the page borrows.</p>
 
   <p>The eight pieces in "Worth your time" come from a small score: editors' pick, deeply read, most viewed, with a bonus for running on three or four fronts and a cap of three per section. The score is in one file and the page prints the reasons, so nothing is hidden. The brief at the top is written by Claude when an API key is in place and stitched from headlines when it is not. The page says which, every time.</p>
 
-  <p>The strip at the top is the bit I like most. It is the last 24 hours of actual sunlight over London, New York or Sydney, worked out from the date and the latitude, with every published piece as a tick at the minute it appeared and the eight as numbered points. Two hundred and fifty ticks, eight points. That is the whole argument in one picture.</p>
+  <p>The strip at the top is the bit I like most. It is the last 24 hours of actual sunlight over London, New York or Sydney, worked out from the date and the latitude, with a bar for every 20 minutes showing how much the newsroom published, stacked by pillar, and the eight as numbered points. Two hundred and fifty pieces, eight points. That is the whole argument in one picture.</p>
 
   <p>The page remembers when you were last here, which edition you want and which pieces you opened. All of that lives in your browser and the "What this page knows" button lists it. Nothing is sent anywhere. If you have your own Content API key you can paste it in and the page will fetch the day itself, live, in the browser.</p>
 
   <p>It is plain HTML, CSS and JavaScript with no build step, on GitHub Pages. A GitHub Action refreshes the data every hour. The world map is 4,852 dots worked out from a public outline of the continents. I described all of this and Claude typed it; I do not write code.</p>
 
   <h2>Diary</h2>
+
+  <h3><span class="date">14 October 2026, evening</span> Second light</h3>
+  <p>Chris looked at the first version and sent it back with notes, all of them right. What changed:</p>
+  <ul>
+    <li><strong>The strip now says what it is.</strong> The tiny ticks were every piece published, one pixel each, and read as static. They are now bars: how many pieces went up every 20 minutes, stacked by pillar, so you can see the newsroom's day against the sun. The counts sit inside the picture and the eight points carry a few words each where there is room. Before your last visit the strip is faded.</li>
+    <li><strong>"Still moving" replaces the crawl.</strong> Twelve key events shared fairly across the day's live blogs, the newest from each first, one at a time on a slow board. Each is named by its subject in plain words with its colour, and a dot marks the blogs that are still live. The explanation went; the chips beneath are the blogs themselves.</li>
+    <li><strong>A world map that does a job.</strong> Chris pointed at the map at the front of the Guardian Weekly: ten stories from around the globe, pinned where they happen. Daylight now does that automatically, from the Guardian's own country tags, one story per place and at most three per continent, the same whichever edition you read. The pins sit at capital cities, roughly, and the placing is only as good as the tags.</li>
+    <li><strong>Five desks, not four.</strong> The Europe edition is in. The old four-column comparison became one short row: the top story each other desk is running that yours is not.</li>
+    <li><strong>Smaller things.</strong> The date is the hero. The numbers down the left take their pillar colour. Thumbnails stay off phones.</li>
+  </ul>
+
 
   <h3><span class="date">14 October 2026</span> First light<span class="milestone">Milestone</span></h3>
   <p>Started from a page of a notebook: a homepage for a less frequent audience, automated from metrics we already have, designed to combat overwhelm. Built the whole first version in a day. The decisions that mattered:</p>

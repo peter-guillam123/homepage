@@ -8,15 +8,16 @@ chooses eight pieces and says why, and it ends.
 
 ## Pieces
 
-- **The day strip.** Twenty-four hours of real sunlight at the edition's city, every published
-  piece as a tick, the chosen eight as numbered points, and a mark for your last visit.
+- **The day strip.** Twenty-four hours of real sunlight at the edition's city, the newsroom's
+  output as bars every 20 minutes, the chosen eight as numbered points, and a mark for your last visit.
 - **The brief.** Three sentences. Claude writes them when a key is present; otherwise a script
   stitches headlines and says so.
-- **The state of play.** Key events from the day's live blogs, as a slow ticker and a full list.
+- **Still moving.** Twelve key events shared across the day's live blogs, one at a time.
 - **Worth your time.** Eight pieces, each with its reason: editors' pick, deeply read, most
   viewed, on how many fronts. A time budget trims the list to fit.
-- **Four desks.** The UK, US, Australia and International fronts on a dot map, with what they
-  share and what only one of them runs.
+- **Around the world.** Ten stories from ten places on a dot map, placed by the Guardian's own
+  country tags. The same for every edition.
+- **From the other desks.** The top story each of the other four editions runs that yours does not.
 - **Off the front.** Surprise me, further afield, a quieter piece.
 - **The end.** That's the day.
 
