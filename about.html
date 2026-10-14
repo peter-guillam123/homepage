@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About Daylight</title>
+<meta name="description" content="What Daylight is, how it is made, and a diary of what was built and why.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,0..100;1,9..144,300..700,0..100&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23e8a33d'/%3E%3C/svg%3E">
+<style>
+  .prose { max-width: 66ch; padding-block: 40px 64px; }
+  .prose h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 400; margin-bottom: 20px; }
+  .prose h2 { font-size: 28px; margin: 40px 0 12px; }
+  .prose h3 { font-size: 21px; margin: 28px 0 8px; }
+  .prose p, .prose li { margin-bottom: 14px; }
+  .prose ul { padding-left: 20px; }
+  .prose .milestone { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sun); margin-left: 8px; vertical-align: middle; }
+  .prose .date { font-family: var(--body); font-size: 13px; color: var(--ink-2); letter-spacing: 0.06em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-row">
+    <p class="wordmark"><a href="./">Daylight</a> <span class="strap">The Guardian, once a day</span></p>
+    <nav class="editions" aria-label="Pages"><a class="ghost" href="./" style="text-decoration:none; display:inline-flex; align-items:center;">Back to today</a></nav>
+  </div>
+</header>
+
+<main class="wrap prose">
+  <h1>About Daylight</h1>
+
+  <p>Most people who read the Guardian do not read it all day. A lot of them come once, look at the homepage, and go. The homepage is not built for them. It is built for the people who come back every hour, and it shows them everything, all the time, in case something changed. For the once-a-day reader that is a wall.</p>
+
+  <p>Daylight is a sketch of a different answer. It takes the day as the unit, not the minute. It asks what happened since you left and what is worth your time, it picks a handful of pieces and says why, and then it stops. It is public because the argument is easier to have with a thing than with a slide. It is not a Guardian product and nobody has agreed to anything.</p>
+
+  <h2>How it is made</h2>
+
+  <p>Everything on the page comes from the Guardian's Content API, which already knows what the editors chose for each of the four fronts, what readers viewed most, what they read deeply rather than just opened, and every piece published in the last 24 hours. No Ophan, no personalisation, no editor sitting behind it. The only human curation is the one the fronts editors already do, which the page borrows.</p>
+
+  <p>The eight pieces in "Worth your time" come from a small score: editors' pick, deeply read, most viewed, with a bonus for running on three or four fronts and a cap of three per section. The score is in one file and the page prints the reasons, so nothing is hidden. The brief at the top is written by Claude when an API key is in place and stitched from headlines when it is not. The page says which, every time.</p>
+
+  <p>The strip at the top is the bit I like most. It is the last 24 hours of actual sunlight over London, New York or Sydney, worked out from the date and the latitude, with every published piece as a tick at the minute it appeared and the eight as numbered points. Two hundred and fifty ticks, eight points. That is the whole argument in one picture.</p>
+
+  <p>The page remembers when you were last here, which edition you want and which pieces you opened. All of that lives in your browser and the "What this page knows" button lists it. Nothing is sent anywhere. If you have your own Content API key you can paste it in and the page will fetch the day itself, live, in the browser.</p>
+
+  <p>It is plain HTML, CSS and JavaScript with no build step, on GitHub Pages. A GitHub Action refreshes the data every hour. The world map is 4,852 dots worked out from a public outline of the continents. I described all of this and Claude typed it; I do not write code.</p>
+
+  <h2>Diary</h2>
+
+  <h3><span class="date">14 October 2026</span> First light<span class="milestone">Milestone</span></h3>
+  <p>Started from a page of a notebook: a homepage for a less frequent audience, automated from metrics we already have, designed to combat overwhelm. Built the whole first version in a day. The decisions that mattered:</p>
+  <ul>
+    <li><strong>The page ends.</strong> "That's the day" is a section, not a joke. Infinite scroll is the problem as much as volume is.</li>
+    <li><strong>Deeply read beats most viewed.</strong> The API exposes the "deeply read" list from the fronts, which is a better signal for someone with one visit to spend than clicks are. I had expected to need Ophan screengrabs for this and did not.</li>
+    <li><strong>Every piece says why.</strong> If the choice is automated, the reasons have to be visible, or it is just another algorithm.</li>
+    <li><strong>News is a ticker.</strong> Key events from the live blogs, as the writers marked them, rather than the blogs themselves.</li>
+    <li><strong>The four fronts disagree.</strong> Putting them side by side on a map turned out to be the most interesting "who's reading what" we can do honestly without reader data.</li>
+    <li><strong>Its own look.</strong> Warm paper, a serif with some character, one sun. It borrows the idea of pillar colours and nothing else.</li>
+  </ul>
+  <p>Honest caveats: the fallback brief is dry, the surprise-me pool is only as good as the week's features, and the snapshot goes stale if nobody puts the key in GitHub. Also the top of the UK list this afternoon was a hair-loss column, because that is what readers stayed with. The data does not care about my taste, which is rather the point.</p>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><a href="./">Daylight</a> · A sketch by Chris Moran, built with Claude. Not a Guardian product. Stories link to theguardian.com.</p>
+  </div>
+</footer>
+</body>
+</html>
