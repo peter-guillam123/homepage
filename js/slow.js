@@ -12,12 +12,13 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const fmtDay = new Intl.DateTimeFormat('en-GB', { weekday: 'long' });
 const BATCH = 12;
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-const state = { data: null, filter: null, items: [], shown: 0 };
+const state = { mutes: null, hidden: 0, data: null, filter: null, items: [], shown: 0 };
 
 init().catch(err => { console.error(err); $('#status').textContent = 'Slow could not load its data. Try again in a moment.'; $('#status').hidden = false; });
 
 async function init() {
   store.visit();
+  state.mutes = normaliseMutes(store.get().mutes);
   state.data = await fetch('data/slow.json').then(r => r.json());
   renderStamp($('#stamp'), state.data.takenAt);
   wire();
@@ -26,11 +27,22 @@ async function init() {
   document.body.classList.add('is-ready');
 }
 
+function normaliseMutes(m) { return { blogs: [], topics: [], sections: [], series: [], kinds: [], ...(m || {}) }; }
+
 function wire() {
   $('#more').addEventListener('click', () => { state.shown += BATCH; renderList(true); });
   wireKeep(document, (id) => state.data.items.find(it => it.id === id));
   updateHeaderCount();
   document.addEventListener('click', (e) => {
+    const less = e.target.closest('[data-mute]');
+    if (less) {
+      const { mute: kind, value } = less.dataset;
+      if (!state.mutes[kind].includes(value)) state.mutes[kind].push(value);
+      store.set({ mutes: state.mutes });
+      less.closest('details')?.removeAttribute('open');
+      renderBubbles(); render();
+      return;
+    }
     const bubble = e.target.closest('[data-series]');
     if (bubble) { state.filter = state.filter === bubble.dataset.series ? null : bubble.dataset.series; renderBubbles(); render(); window.scrollTo({ top: $('#slow').offsetTop - 80, behavior: reduced.matches ? 'auto' : 'smooth' }); return; }
     const nav = e.target.closest('[data-frame]');
@@ -46,7 +58,7 @@ function wire() {
 
 function renderBubbles() {
   const { series } = state.data;
-  const list = Object.entries(series).sort((a, b) => b[1].n - a[1].n).slice(0, 14);
+  const list = Object.entries(series).filter(([id]) => !state.mutes.series.includes(id)).sort((a, b) => b[1].n - a[1].n).slice(0, 14);
   const hue = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
   $('#bubbles').innerHTML = `<li><button type="button" class="bubble${state.filter ? '' : ' is-on'}" data-series=""><span class="bubble-ring"><span class="bubble-face bubble-all">All</span></span><span class="bubble-name">Everything</span></button></li>` +
     list.map(([id, s]) => `<li><button type="button" class="bubble${state.filter === id ? ' is-on' : ''}" data-series="${esc(id)}" style="--h:${hue(id)}">
@@ -61,13 +73,27 @@ function initials(name) {
 
 function render() {
   const { data, filter } = state;
-  state.items = data.items.filter(it => !filter || it.seriesId === filter);
+  const all = data.items.filter(it => !filter || it.seriesId === filter);
+  state.items = all.filter(it => !muted(it));
+  state.hidden = all.length - state.items.length;
+  $('#hidden-note').hidden = !state.hidden;
+  $('#hidden-n').textContent = state.hidden;
   state.shown = BATCH;
   const s = filter && data.series[filter];
   $('#since').textContent = s
     ? `${s.name}: ${s.n} piece${s.n === 1 ? '' : 's'} in the last couple of days. Pick the bubble again for everything.`
     : `Features, pictures and the series you follow, outside the news. ${data.items.length} pieces from the last couple of days, newest first, no hurry.`;
   renderList(false);
+}
+
+// Hidden if the reader asked for less of its series, its section or its kind of piece.
+function muted(it) {
+  const m = state.mutes;
+  return (it.seriesId && m.series.includes(it.seriesId)) || m.sections.includes(it.sectionId) || m.kinds.includes(it.kind);
+}
+
+function less(options) {
+  return `<details class="less"><summary aria-label="See less like this"><span aria-hidden="true">Less</span></summary><div class="less-menu">${options.map(o => `<button type="button" data-mute="${o.kind}" data-value="${esc(o.value)}">${esc(o.label)}</button>`).join('')}</div></details>`;
 }
 
 function renderList(append) {
@@ -96,12 +122,17 @@ function dayLabel(iso) {
 
 function card(it) {
   const who = it.series || it.section;
+  const opts = [];
+  if (it.seriesId) opts.push({ kind: 'series', value: it.seriesId, label: `Less ${it.series}` });
+  opts.push({ kind: 'sections', value: it.sectionId, label: `Less ${it.section}` });
+  if (it.kind) opts.push({ kind: 'kinds', value: it.kind, label: `Fewer ${it.kind.toLowerCase()}s` });
   const minutes = it.words ? `${Math.max(1, Math.round(it.words / 230))} min read` : '';
   const picture = it.type === 'gallery' ? gallery(it) : `<a class="pic" href="${urlFor(it.id)}" data-id="${esc(it.id)}" tabindex="-1" aria-hidden="true">
       <img loading="lazy" src="${esc(it.image.src)}" alt="" width="${it.image.w}" height="${it.image.h}" style="aspect-ratio:${it.image.w}/${it.image.h}">
     </a>${it.image.credit ? `<p class="credit">${esc(it.image.credit)}</p>` : ''}`;
   return `<li class="s-card p-${it.pillar || 'none'}${it.type === 'gallery' ? ' is-gallery' : ''}" data-id="${esc(it.id)}">
     <p class="s-who"><span class="s-dot" aria-hidden="true"></span><span class="s-name">${esc(who)}</span><span class="s-sep">·</span><span class="s-kind">${esc(it.kind)}</span><time class="s-ago" datetime="${it.published}">${ago(it.published)}</time></p>
+    ${less(opts)}
     ${picture}
     <div class="s-text">
       <h2><a href="${urlFor(it.id)}" data-id="${esc(it.id)}">${esc(it.title)}</a>${it.stars ? ` <span class="stars" aria-label="${it.stars} stars">${'★'.repeat(it.stars)}<span class="stars-off">${'★'.repeat(5 - it.stars)}</span></span>` : ''}</h2>
