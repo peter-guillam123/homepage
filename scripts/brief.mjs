@@ -1,7 +1,7 @@
 // Writes the short daily brief for each edition.
 // With ANTHROPIC_API_KEY set and the SDK installed, Claude writes it.
 // Otherwise the brief is stitched from headlines, and says so.
-import { choose, EDITION_NAMES } from '../js/choose.js';
+import { choose, frontNews, EDITION_NAMES } from '../js/choose.js';
 import { headlineBrief } from '../js/brief.js';
 
 const MODEL = 'claude-opus-5-5';
@@ -13,15 +13,18 @@ async function claudeBrief(snap) {
   for (const ed of Object.keys(snap.editions)) {
     material[ed] = {
       edition: EDITION_NAMES[ed],
-      pieces: choose(snap, ed, 8).map(p => ({ headline: p.title, section: p.section, kind: p.kind, standfirst: p.trail })),
-      latest: snap.ticker.slice(0, 8).map(t => ({ time: t.time, event: t.title, blog: t.blog })),
+      topOfFront: frontNews(snap, ed, 8).map((p, i) => ({
+        position: i + 1, headline: p.title, section: p.section, kind: p.kind, standfirst: p.trail,
+        latest: p.kind === 'Live' ? snap.ticker.filter(t => t.blogId === p.id).slice(0, 2).map(t => t.title) : undefined,
+      })),
     };
   }
   const system = [
     'You write a three-sentence brief for a reader who looks at the news once a day.',
-    'British English. Plain words. Active voice. No em dashes. No hype. No adjectives of excitement.',
-    'Name the stories plainly, in present tense, as a careful colleague would over coffee.',
-    'Under 75 words per edition. Do not invent anything not in the material.',
+    'The material is the news block at the top of one Guardian edition front, in the order the editors placed it. Position 1 is the lead.',
+    'Say what leads and what follows, weighted as the editors weighted it. For a live blog, use its latest events for what is happening.',
+    'British English. Plain words. Active voice. Present tense. No em dashes. No hype. No adjectives of excitement.',
+    'Under 75 words per edition. Do not invent anything not in the material. Do not mention the Guardian, the front or the editors.',
     'Reply with JSON only: an object whose keys are the edition ids given and whose values are the brief text.',
   ].join(' ');
   const res = await client.beta.messages.create({

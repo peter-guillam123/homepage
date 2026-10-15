@@ -53,7 +53,7 @@ function compact(r) {
   const tags = r.tags || [];
   return {
     id: r.id,
-    title: f.headline || r.webTitle,
+    title: (f.headline || r.webTitle).trim(),
     type: r.type,
     section: r.sectionName,
     sectionId: r.sectionId,

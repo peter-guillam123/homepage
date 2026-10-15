@@ -165,9 +165,10 @@ function renderBrief() {
   const { snap, edition } = state;
   const text = (snap.brief && snap.brief.text && snap.brief.text[edition]) || headlineBrief(snap, edition);
   $('#brief').textContent = text;
+  const at = fmtTime.format(new Date(snap.takenAt));
   $('#brief-method').textContent = snap.brief && snap.brief.method === 'claude'
-    ? `Written by a model from today’s headlines and standfirsts, unedited.`
-    : `Stitched from headlines by a script. No model, no editor.`;
+    ? `The news at the top of the ${EDITION_NAMES[edition]} front at ${at}, in three sentences by a model. Unedited.`
+    : `The news at the top of the ${EDITION_NAMES[edition]} front at ${at}, stitched from headlines by a script. No model, no editor.`;
 }
 
 function renderWorth() {

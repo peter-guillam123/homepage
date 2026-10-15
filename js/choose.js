@@ -150,3 +150,14 @@ export function pickTicker(ticker, n = 12, only = null) {
   }
   return out;
 }
+
+// The headlines at the top of an edition's front: the news-pillar editors' picks with a
+// news tone, in front order. Features sit in their own container and are left out.
+const NEWSY = new Set(['Report', 'Live', 'Analysis', 'Explainer']);
+export function frontNews(snap, edition, n = 8) {
+  const items = snap.items;
+  return snap.editions[edition].picks
+    .map(id => items[id])
+    .filter(it => it && it.pillar === 'news' && (!it.kind || NEWSY.has(it.kind)))
+    .slice(0, n);
+}
