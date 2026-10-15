@@ -67,6 +67,8 @@ jobs:
             git commit -m "Refresh snapshot $(date -u +'%Y-%m-%d %H:%M UTC')"
             git push
           fi
+      - name: Keep node_modules out of the site
+        run: rm -rf node_modules
       - uses: actions/configure-pages@v5
         with:
           enablement: true

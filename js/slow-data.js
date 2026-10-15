@@ -69,7 +69,8 @@ export async function buildSlow({ fetchJson, apiKey = null, now = new Date(), sn
     'type': 'gallery', 'from-date': iso(threeDays), 'page-size': '30', 'order-by': 'newest',
     'show-fields': 'headline,trailText,byline,thumbnail', 'show-tags': 'series', 'show-elements': 'image',
   });
-  log(`slow: galleries returned ${gal.response.results.length}, with elements ${gal.response.results.filter(r => (r.elements || []).length).length}`);
+  const galleryMeta = { returned: gal.response.results.length, withElements: gal.response.results.filter(r => (r.elements || []).length).length, withThumb: gal.response.results.filter(r => r.fields && r.fields.thumbnail).length, tier: gal.response.userTier };
+  log(`slow: galleries returned ${galleryMeta.returned}, with elements ${galleryMeta.withElements}`);
   for (const r of gal.response.results) {
     let frames = (r.elements || []).filter(e => e.type === 'image').map(e => pickAsset(e)).filter(Boolean).slice(0, 12);
     if (!frames.length && r.fields && r.fields.thumbnail) frames = [{ src: r.fields.thumbnail, w: 500, h: 300 }];
@@ -93,5 +94,5 @@ export async function buildSlow({ fetchJson, apiKey = null, now = new Date(), sn
   items.sort((a, b) => new Date(b.published) - new Date(a.published));
   const seriesCount = {};
   for (const it of items) if (it.seriesId) seriesCount[it.seriesId] = { name: it.series, n: (seriesCount[it.seriesId] || { n: 0 }).n + 1 };
-  return { takenAt: iso(now), items, series: seriesCount };
+  return { takenAt: iso(now), items, series: seriesCount, meta: { galleries: galleryMeta } };
 }
