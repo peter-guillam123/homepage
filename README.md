@@ -15,10 +15,10 @@ chooses eight pieces and says why, and it ends.
 - **Still moving.** Twelve key events shared across the day's live blogs, one at a time.
 - **Worth your time.** Eight pieces, each with its reason: editors' pick, deeply read, most
   viewed, on how many fronts. A time budget trims the list to fit.
-- **Around the world.** Ten stories from ten places on a dot map, placed by the Guardian's own
-  country tags. The same for every edition.
+- **Around the world.** Ten stories from ten places on an annotated dot map, placed by the
+  Guardian's own country tags. The same for every edition.
 - **From the other desks.** The top story each of the other four editions runs that yours does not.
-- **Off the front.** Surprise me, further afield, a quieter piece.
+- **Off the front.** Deeply read, from a series, a quieter piece.
 - **The end.** That's the day.
 
 ## Data
