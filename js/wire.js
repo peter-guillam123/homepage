@@ -7,6 +7,7 @@ import { EDITION_NAMES } from './choose.js';
 import { ago, esc } from './ticker.js';
 import { urlFor, tickerUrl } from './snapshot.js';
 import { keepButton, wireKeep, updateHeaderCount } from './keep.js';
+import { renderStamp } from './stamp.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -26,6 +27,7 @@ async function init() {
   state.mutes = normaliseMutes(saved.mutes);
   state.show = { ...state.show, ...(saved.wireShow || {}) };
   state.data = await fetch('data/wire.json').then(r => r.json());
+  renderStamp($('#stamp'), state.data.takenAt);
   wire();
   render();
   document.body.classList.add('is-ready');
@@ -140,7 +142,7 @@ function renderList() {
   $('#more').hidden = state.shown >= items.length;
   $('#more').textContent = `Show the next ${Math.min(BATCH, items.length - state.shown)}`;
   $('#wire-end').textContent = state.shown >= items.length
-    ? `That is everything since ${fmtWhen.format(new Date(data.window.from))}. Taken at ${fmtTime.format(new Date(data.takenAt))}; it refreshes every hour.`
+    ? `That is everything since ${fmtWhen.format(new Date(data.window.from))}.`
     : '';
 
   function rail(iso) {

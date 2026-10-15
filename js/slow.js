@@ -5,6 +5,7 @@ import { store } from './store.js';
 import { ago, esc } from './ticker.js';
 import { urlFor } from './snapshot.js';
 import { keepButton, wireKeep, updateHeaderCount } from './keep.js';
+import { renderStamp } from './stamp.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -18,6 +19,7 @@ init().catch(err => { console.error(err); $('#status').textContent = 'Slow could
 async function init() {
   store.visit();
   state.data = await fetch('data/slow.json').then(r => r.json());
+  renderStamp($('#stamp'), state.data.takenAt);
   wire();
   renderBubbles();
   render();

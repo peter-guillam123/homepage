@@ -8,6 +8,7 @@ import { renderWorld } from './world.js';
 import { store } from './store.js';
 import { CITIES } from './sun.js';
 import { keepButton, wireKeep, updateHeaderCount } from './keep.js';
+import { renderStamp } from './stamp.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -139,13 +140,7 @@ function renderHead() {
       : `You were last here ${ago}. Since then: ${pieces} pieces published and ${events} events on the live blogs.`;
   }
   $('#since').textContent = since;
-  const ageHours = (Date.now() - taken.getTime()) / 3600000;
-  const stale = $('#stale');
-  if (snap.live) { stale.hidden = true; }
-  else if (ageHours > 3) {
-    stale.textContent = `This snapshot is ${Math.round(ageHours)} hours old. The hourly refresh needs an API key in GitHub; see About.`;
-    stale.hidden = false;
-  } else stale.hidden = true;
+  renderStamp($('#stamp'), snap.takenAt, { live: Boolean(snap.live) });
 }
 
 function describeAgo(t) {
@@ -262,6 +257,6 @@ function renderEnd() {
   const taken = new Date(snap.takenAt);
   $('#taken').textContent = snap.live
     ? `Fetched live from the Guardian Content API at ${fmtTime.format(new Date())} using your key.`
-    : `Snapshot taken at ${fmtTime.format(taken)} your time. It refreshes every hour when the key is in place.`;
+    : `Everything above was taken at ${fmtTime.format(taken)} your time, and is taken again every hour.`;
 }
 

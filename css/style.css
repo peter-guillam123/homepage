@@ -584,3 +584,14 @@ dialog::backdrop { background: rgb(0 0 0 / 0.45); }
 .yours .key-form { border-top: 1px solid var(--line); margin-top: 20px; padding-top: 18px; max-width: 520px; }
 .yours-forget .danger { margin-top: 12px; }
 @media (max-width: 599px) { .basics div, .basics-row { grid-template-columns: 1fr; gap: 2px; } }
+
+/* Last updated stamp */
+.stamp { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0 8px; margin-top: 14px; padding: 6px 12px 6px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; background: var(--paper); }
+.stamp:empty { display: none; }
+.stamp-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sport); flex: none; }
+.stamp time { color: var(--ink); font-weight: 600; }
+.stamp-ago::before, .stamp-note::before { content: '·'; margin-right: 8px; opacity: 0.6; }
+.stamp.is-stale { border-color: var(--sun); }
+.stamp.is-stale .stamp-dot { background: var(--sun); }
+.stamp.is-stale .stamp-note { color: var(--opinion); font-weight: 600; }
+@media (prefers-reduced-motion: no-preference) { .stamp-dot { animation: blink 3s ease-in-out infinite; } }
