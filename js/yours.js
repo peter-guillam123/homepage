@@ -10,7 +10,9 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const fmtWhen = new Intl.DateTimeFormat('en-GB', { weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: false });
 
 let wireBlogs = {};
+let slowSeries = {};
 fetch('data/wire.json').then(r => r.json()).then(w => { wireBlogs = w.blogs || {}; renderLess(); }).catch(() => {});
+fetch('data/slow.json').then(r => r.json()).then(d => { slowSeries = d.series || {}; renderLess(); }).catch(() => {});
 
 render();
 updateHeaderCount();
@@ -20,7 +22,7 @@ document.addEventListener('click', (e) => {
   if (unkeep) { store.unkeep(unkeep.dataset.unkeep); renderKept(); updateHeaderCount(); return; }
   const unmute = e.target.closest('[data-unmute]');
   if (unmute) {
-    const d = store.get(); const m = { blogs: [], topics: [], sections: [], ...(d.mutes || {}) };
+    const d = store.get(); const m = { blogs: [], topics: [], sections: [], series: [], kinds: [], ...(d.mutes || {}) };
     m[unmute.dataset.unmute] = m[unmute.dataset.unmute].filter(v => v !== unmute.dataset.value);
     store.set({ mutes: m }); renderLess(); return;
   }
@@ -57,15 +59,17 @@ function renderKept() {
 
 function renderLess() {
   const d = store.get();
-  const m = { blogs: [], topics: [], sections: [], ...(d.mutes || {}) };
+  const m = { blogs: [], topics: [], sections: [], series: [], kinds: [], ...(d.mutes || {}) };
   const rows = [
-    ...m.blogs.map(v => ({ kind: 'blogs', value: v, label: wireBlogs[v] ? `Posts from ${wireBlogs[v].topic} live` : `Posts from a live blog (${v.split('/').pop().replace(/-/g, ' ')})`, note: 'live blog' })),
-    ...m.topics.map(v => ({ kind: 'topics', value: v, label: v, note: 'subject' })),
-    ...m.sections.map(v => ({ kind: 'sections', value: v, label: v.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase()), note: 'section' })),
+    ...m.blogs.map(v => ({ kind: 'blogs', value: v, label: wireBlogs[v] ? `Posts from ${wireBlogs[v].topic} live` : `Posts from a live blog (${v.split('/').pop().replace(/-/g, ' ')})`, note: 'live blog, on the wire' })),
+    ...m.topics.map(v => ({ kind: 'topics', value: v, label: v, note: 'subject, on the wire' })),
+    ...m.sections.map(v => ({ kind: 'sections', value: v, label: v.replace(/-/g, ' ').replace(/^./, c => c.toUpperCase()), note: 'section, on the wire and on Slow' })),
+    ...m.series.map(v => ({ kind: 'series', value: v, label: slowSeries[v]?.name || v.split('/').pop().replace(/-/g, ' ').replace(/^./, c => c.toUpperCase()), note: 'series, on Slow' })),
+    ...m.kinds.map(v => ({ kind: 'kinds', value: v, label: `${v}s`, note: 'kind of piece, on Slow' })),
   ];
   $('#less-note').textContent = rows.length
-    ? `These are hidden on the wire. Turn any of them back on here.`
-    : 'Nothing muted. Every item on the wire has a "Less" button for a blog, a subject or a section.';
+    ? 'These are hidden on the wire or on Slow. Turn any of them back on here.'
+    : 'Nothing muted. Every item on the wire and on Slow has a "Less" button for a blog, a subject, a section, a series or a kind of piece.';
   $('#less-list').innerHTML = rows.map(r => `<li><span><strong>${esc(r.label)}</strong> <span class="muted">${esc(r.note)}</span></span><button type="button" class="ghost" data-unmute="${r.kind}" data-value="${esc(r.value)}">Show again</button></li>`).join('');
 }
 

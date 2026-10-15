@@ -33,7 +33,7 @@ async function init() {
   document.body.classList.add('is-ready');
 }
 
-function normaliseMutes(m) { return { blogs: [], topics: [], sections: [], ...(m || {}) }; }
+function normaliseMutes(m) { return { blogs: [], topics: [], sections: [], series: [], kinds: [], ...(m || {}) }; }
 
 function wire() {
   $$('[data-edition]').forEach(b => b.addEventListener('click', () => { state.edition = b.dataset.edition; store.set({ edition: state.edition }); render(); }));

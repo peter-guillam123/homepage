@@ -495,12 +495,13 @@ dialog::backdrop { background: rgb(0 0 0 / 0.45); }
 .slow-section { padding-block: 10px 56px; }
 .slow { list-style: none; margin: 0 auto; padding: 0 var(--gutter); max-width: 680px; display: grid; gap: 44px; }
 .slow-day { text-align: center; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); margin-top: 8px; }
-.s-card { display: grid; gap: 10px; }
+.s-card { display: grid; gap: 10px; position: relative; }
+.s-card .less { top: -8px; }
 @media (prefers-reduced-motion: no-preference) {
   .s-card { opacity: 0; transform: translateY(14px); transition: opacity 0.7s ease, transform 0.7s ease; }
   .s-card.is-in { opacity: 1; transform: none; }
 }
-.s-who { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-2); }
+.s-who { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-2); padding-right: 48px; }
 .s-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--none); flex: none; }
 .p-arts .s-dot { background: var(--arts); }
 .p-lifestyle .s-dot { background: var(--lifestyle); }
