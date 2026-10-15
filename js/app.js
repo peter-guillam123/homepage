@@ -118,7 +118,7 @@ function render() {
   renderStrip($('#strip'), { snap, edition, chosen: state.chosen, lastVisit: state.visit.last });
   $('#strip-caption').innerHTML = `<span class="muted">Real light over ${esc(CITIES[edition].name)}. Bars: pieces published every 20 minutes, by pillar. Points: the eight below.</span>`;
   renderBrief();
-  renderTicker($('#board'), $('#blogs'), snap.ticker, { lastVisit: state.visit.last });
+  renderTicker($('#board'), snap.ticker, { lastVisit: state.visit.last });
   renderWorth();
   renderDesks();
   renderOff();
