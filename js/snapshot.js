@@ -159,7 +159,7 @@ export async function buildSnapshot({ fetchJson, apiKey = null, now = new Date()
       ticker.push({
         time: b.firstPublishedDate,
         title: stripHtml(b.title),
-        summary: b.bodyTextSummary ? trimWords(stripHtml(b.bodyTextSummary), 160) : null,
+        summary: b.bodyTextSummary ? trimWords(stripHtml(b.bodyTextSummary), 560) : null,
         blog: (blog.fields && blog.fields.headline) || blog.webTitle,
         blogId: blog.id,
         block: b.id,

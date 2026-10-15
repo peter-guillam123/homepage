@@ -219,7 +219,7 @@ p { margin: 0; }
 .stage-loop { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .stage-loop .slides { margin-block: auto; }
 .slides { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
-.slide { grid-area: 1 / 1; min-width: 0; opacity: 0; visibility: hidden; transition: opacity 0.6s; min-height: 9em; }
+.slide { grid-area: 1 / 1; min-width: 0; opacity: 0; visibility: hidden; transition: opacity 0.6s; min-height: 11em; }
 .slide.is-on { opacity: 1; visibility: visible; }
 .slide-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; font-size: 14px; color: var(--bd-muted); }
 .slide time { font-variant-numeric: tabular-nums; }
@@ -230,7 +230,8 @@ p { margin: 0; }
 .slide h3 { overflow-wrap: anywhere; font-size: clamp(24px, 3.2vw, 38px); margin: 10px 0 8px; max-width: 24em; font-variation-settings: 'SOFT' 50; }
 .slide h3 a { text-decoration: none; }
 .slide h3 a:hover { text-decoration: underline; text-decoration-color: var(--sun); text-decoration-thickness: 2px; }
-.slide-sum { color: var(--bd-muted); font-size: 15px; max-width: 60ch; }
+.slide-sum { color: var(--bd-muted); font-size: 16px; line-height: 1.5; max-width: 66ch; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+@media (max-width: 599px) { .slide-sum { -webkit-line-clamp: 5; font-size: 15px; } }
 .board-nav { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
 .nav-btn { background: transparent; border: 1px solid var(--bd-line); color: var(--bd-fg); border-radius: 50%; width: 40px; height: 40px; font-size: 18px; line-height: 1; }
 .nav-btn:hover { border-color: var(--bd-fg); }
@@ -255,7 +256,7 @@ p { margin: 0; }
 .timeline li.is-new .ago::before { content: "● "; color: var(--sun); }
 .timeline a { text-decoration: none; }
 .timeline a:hover { text-decoration: underline; }
-.timeline p { color: var(--bd-muted); font-size: 14px; margin-top: 3px; }
+.timeline p { color: var(--bd-muted); font-size: 14px; margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .board .back { margin-top: 14px; border-color: var(--bd-line); color: var(--bd-fg); }
 .board .back:hover { border-color: var(--bd-fg); }
 @media (max-width: 479px) { .stage { padding: 18px 16px 14px; } .channel { min-width: 170px; } }
