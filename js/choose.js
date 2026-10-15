@@ -102,16 +102,22 @@ export function aroundTheWorld(snap, places, n = 10) {
   return out;
 }
 
-// The one story each other desk is running that yours is not. Highest pick first.
-export function otherDesks(snap, edition) {
+// The one story each other edition runs that no other front does, and that is not
+// already on this page. Highest pick first. If a front has nothing unique, the top
+// story it runs that yours does not stands in, marked as shared.
+export function otherDesks(snap, edition, exclude = new Set()) {
   const mine = new Set(snap.editions[edition].picks);
   const out = [];
+  const readable = (pid) => snap.items[pid] && snap.items[pid].kind !== 'Live' && !exclude.has(pid);
   for (const [ed, data] of Object.entries(snap.editions)) {
     if (ed === edition) continue;
-    const id = data.picks.find(pid => !mine.has(pid) && snap.items[pid] && snap.items[pid].kind !== 'Live');
+    const others = Object.entries(snap.editions).filter(([o]) => o !== ed);
+    const sharedWith = (pid) => others.filter(([, d]) => d.picks.includes(pid)).map(([o]) => o);
+    const unique = data.picks.find(pid => readable(pid) && sharedWith(pid).length === 0);
+    const id = unique || data.picks.find(pid => readable(pid) && !mine.has(pid));
     if (!id) continue;
-    const elsewhere = Object.entries(snap.editions).filter(([o, d]) => o !== ed && d.picks.includes(id)).map(([o]) => o);
-    out.push({ edition: ed, ...snap.items[id], elsewhere });
+    out.push({ edition: ed, ...snap.items[id], elsewhere: sharedWith(id) });
+    exclude.add(id);
   }
   return out;
 }

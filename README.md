@@ -17,7 +17,7 @@ chooses eight pieces and says why, and it ends.
   viewed, on how many fronts. A time budget trims the list to fit.
 - **Around the world.** Ten stories from ten places on an annotated dot map, placed by the
   Guardian's own country tags. The same for every edition.
-- **From the other desks.** The top story each of the other four editions runs that yours does not.
+- **From the other editions.** For each other edition, the top story it runs that no other front does.
 - **Off the front.** Deeply read, from a series, a quieter piece.
 - **The end.** That's the day.
 
