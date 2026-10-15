@@ -127,7 +127,7 @@ function gallery(it) {
   return `<div class="gallery">
     <div class="frames" tabindex="0" aria-label="${esc(it.title)}, ${it.frames.length} pictures">${it.frames.map((f, i) => `
       <figure class="frame"><img loading="lazy" src="${esc(f.src)}" alt="${esc(f.alt || '')}" width="${f.w}" height="${f.h}">${f.caption ? `<figcaption>${esc(f.caption)}</figcaption>` : ''}</figure>`).join('')}</div>
-    <div class="frames-nav"><button type="button" class="nav-btn" data-frame="-1" aria-label="Previous picture">←</button><span class="frames-count"><span class="frames-n">1</span> of ${it.frames.length}</span><button type="button" class="nav-btn" data-frame="1" aria-label="Next picture">→</button></div>
+    ${it.frames.length > 1 ? `<div class="frames-nav"><button type="button" class="nav-btn" data-frame="-1" aria-label="Previous picture">←</button><span class="frames-count"><span class="frames-n">1</span> of ${it.frames.length}</span><button type="button" class="nav-btn" data-frame="1" aria-label="Next picture">→</button></div>` : `<p class="credit">${esc(it.frames.length)} picture${it.frames.length === 1 ? ', more in the gallery' : 's'}</p>`}
   </div>`;
 }
 
@@ -135,7 +135,7 @@ function wireFrames() {
   $$('.gallery .frames:not([data-wired])').forEach(strip => {
     strip.dataset.wired = '1';
     const n = strip.closest('.gallery').querySelector('.frames-n');
-    strip.addEventListener('scroll', () => { n.textContent = Math.round(strip.scrollLeft / strip.clientWidth) + 1; }, { passive: true });
+    if (n) strip.addEventListener('scroll', () => { n.textContent = Math.round(strip.scrollLeft / strip.clientWidth) + 1; }, { passive: true });
   });
 }
 

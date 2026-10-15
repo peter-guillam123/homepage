@@ -71,7 +71,7 @@ export async function buildSlow({ fetchJson, apiKey = null, now = new Date(), sn
   });
   for (const r of gal.response.results) {
     const frames = (r.elements || []).filter(e => e.type === 'image').map(e => pickAsset(e)).filter(Boolean).slice(0, 12);
-    if (frames.length < 2) continue;
+    if (!frames.length) continue;
     const f = r.fields || {};
     const series = (r.tags || []).find(t => t.type === 'series');
     items.push({
