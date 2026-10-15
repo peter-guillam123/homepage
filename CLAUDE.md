@@ -25,6 +25,8 @@ No Ophan, no personalisation beyond what the browser remembers locally.
   stitched headlines. The page says which.
 - `js/wire-data.js` builds `data/wire.json` for the wire page (`wire.html`, `js/wire.js`): news
   articles and live blog posts from the last 24 hours.
+- `js/slow-data.js` builds `data/slow.json` for the slow page (`slow.html`, `js/slow.js`):
+  features and galleries outside the news, with full-size images.
 - `data/snapshot.json` is committed. `data/world-dots.json` is the dot map, built once from
   world-atlas with `scripts/build-world-dots.mjs`.
 - No build step for the site. Vanilla JS modules, one stylesheet, two Google fonts.
