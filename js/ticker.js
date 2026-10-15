@@ -3,12 +3,13 @@
 // Times are relative and keep counting while the page is open.
 import { tickerUrl, urlFor } from './snapshot.js';
 import { pickTicker, movingBlogs } from './choose.js';
+import { makeLoop } from './loop.js';
 
 const fmtTime = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
 const fmtDayTime = new Intl.DateTimeFormat('en-GB', { weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: false });
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 const PERIOD = 6500;
-let timer = null;
+let loop = null;
 let clock = null;
 
 export function ago(iso, now = Date.now()) {
@@ -101,13 +102,13 @@ export function renderTicker(boardEl, items, { lastVisit }) {
     if (!openBlog) tune(slides[i].dataset.blog);
     restartBar();
   };
-  const start = () => { stop(); if (!reduced.matches && n > 1 && !openBlog) { timer = setInterval(() => show(i + 1), PERIOD); restartBar(); } };
-  const stop = () => { if (timer) clearInterval(timer); timer = null; };
+  loop?.destroy();
+  loop = makeLoop({ root: boardEl, restEls: [boardEl.querySelector('.stage')], period: PERIOD, bar, tick: () => show(i + 1), reduced: reduced.matches || n < 2 });
 
   const openChannel = (blogId) => {
     const b = groups.get(blogId);
     openBlog = blogId;
-    stop();
+    loop.allow(false);
     tune(blogId);
     channels.forEach(c => c.setAttribute('aria-pressed', String(c.dataset.blog === blogId)));
     blogEl.innerHTML = `
@@ -131,18 +132,14 @@ export function renderTicker(boardEl, items, { lastVisit }) {
     loopEl.hidden = false;
     boardEl.classList.remove('is-open');
     tune(slides[i].dataset.blog);
-    start();
+    loop.allow(true);
   };
 
   channels.forEach(c => c.addEventListener('click', () => (openBlog === c.dataset.blog ? closeChannel() : openChannel(c.dataset.blog))));
-  boardEl.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => { show(i + Number(b.dataset.nav)); start(); }));
-  boardEl.addEventListener('mouseenter', stop);
-  boardEl.addEventListener('mouseleave', () => { if (!openBlog) start(); });
-  boardEl.addEventListener('focusin', stop);
-  boardEl.addEventListener('focusout', () => { if (!openBlog) start(); });
+  boardEl.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => { show(i + Number(b.dataset.nav)); loop.restart(); }));
   if (reduced.matches) boardEl.classList.add('is-static');
   tune(slides[0]?.dataset.blog);
-  start();
+  loop.sync();
 
   // Keep the relative times honest while the page sits open.
   if (clock) clearInterval(clock);

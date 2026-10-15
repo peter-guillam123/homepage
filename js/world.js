@@ -5,26 +5,21 @@ import { aroundTheWorld, readingMinutes } from './choose.js';
 import { PLACES } from './places.js';
 import { urlFor } from './snapshot.js';
 import { esc } from './ticker.js';
+import { makeLoop } from './loop.js';
+
+let loop = null;
 
 const CELL = 5;
 const PERIOD = 7000;
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-let timer = null;
-let last = null;
-let resizeTimer = null;
 
 export function renderWorld(gridEl, dots, snap) {
   const stories = aroundTheWorld(snap, PLACES, 10);
-  last = { gridEl, dots, snap, stories };
   draw(gridEl, dots, snap, stories);
-  if (!gridEl.dataset.resizeWired) {
-    gridEl.dataset.resizeWired = '1';
-    window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (last) draw(last.gridEl, last.dots, last.snap, last.stories, true); }, 150); });
-  }
   return stories;
 }
 
-function draw(gridEl, dots, snap, stories, quiet = false) {
+function draw(gridEl, dots, snap, stories) {
   const W = dots.cols * CELL, H = dots.rows * CELL;
   const proj = (lon, lat) => [((lon + 180) / 360) * W, ((dots.latTop - lat) / (dots.latTop - dots.latBottom)) * H];
   let circles = '';
@@ -53,32 +48,17 @@ function draw(gridEl, dots, snap, stories, quiet = false) {
       <div class="board-nav">
         <button type="button" class="nav-btn" data-nav="-1" aria-label="Previous story">←</button>
         <button type="button" class="nav-btn" data-nav="1" aria-label="Next story">→</button>
-        <span class="board-count"><span class="wstage-n">1</span> of ${stories.length}</span>
+        <span class="board-count"><span class="wstage-n">1</span> of ${stories.length}<span class="loop-paused"> · paused</span></span>
         <span class="progress" aria-hidden="true"><span class="progress-bar wprogress"></span></span>
       </div>
     </div>
-    <svg class="wleaders" aria-hidden="true"></svg>
     <ol class="world-list is-backup">${stories.map((st, i) => `<li><a href="${urlFor(st.id)}">${i + 1}. ${esc(st.place.name)}: ${esc(st.title)}</a></li>`).join('')}</ol>`;
 
   const body = gridEl.querySelector('.wstage-body');
   const stage = gridEl.querySelector('.wstage');
   const bar = gridEl.querySelector('.wprogress');
-  const leaders = gridEl.querySelector('.wleaders');
-  const svg = gridEl.querySelector('.world');
   let i = 0;
 
-  const leader = (k) => {
-    const gr = gridEl.getBoundingClientRect(), sr = svg.getBoundingClientRect(), st = stage.getBoundingClientRect();
-    const p = pins[k];
-    const px = sr.left - gr.left + p.px / W * sr.width, py = sr.top - gr.top + p.py / H * sr.height;
-    const sideways = st.left - gr.left > sr.width * 0.5;
-    const sx = sideways ? st.left - gr.left : st.left - gr.left + 28, sy = sideways ? st.top - gr.top + 34 : st.top - gr.top;
-    const dx = px - sx, dy = py - sy, d = Math.hypot(dx, dy) || 1;
-    const ex = px - dx / d * (R * sr.width / W + 3), ey = py - dy / d * (R * sr.width / W + 3);
-    leaders.setAttribute('viewBox', `0 0 ${gr.width} ${gr.height}`);
-    leaders.setAttribute('width', gr.width); leaders.setAttribute('height', gr.height);
-    leaders.innerHTML = `<line class="is-hot" x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}"/><circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="3"/>`;
-  };
   const restartBar = () => { if (!bar) return; bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = ''; };
   const show = (k) => {
     i = (k + stories.length) % stories.length;
@@ -90,22 +70,17 @@ function draw(gridEl, dots, snap, stories, quiet = false) {
       ${st.trail ? `<p class="trail">${esc(st.trail)}</p>` : ''}`;
     gridEl.querySelectorAll('.wpin').forEach(p => p.classList.toggle('is-hot', Number(p.dataset.i) === i));
     gridEl.querySelector('.wstage-n').textContent = i + 1;
-    leader(i);
     restartBar();
   };
-  const stop = () => { if (timer) clearInterval(timer); timer = null; };
-  const start = () => { stop(); if (!reduced.matches && stories.length > 1) { timer = setInterval(() => show(i + 1), PERIOD); restartBar(); } };
-  gridEl.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => { show(i + Number(b.dataset.nav)); start(); }));
+  loop?.destroy();
+  loop = makeLoop({ root: gridEl, restEls: [stage, gridEl.querySelector('.wpins')], period: PERIOD, bar, tick: () => show(i + 1), reduced: reduced.matches || stories.length < 2 });
+  gridEl.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => { show(i + Number(b.dataset.nav)); loop.restart(); }));
   gridEl.querySelectorAll('.wpin').forEach(p => {
-    p.addEventListener('click', (e) => { e.preventDefault(); show(Number(p.dataset.i)); start(); });
-    p.addEventListener('mouseenter', () => { show(Number(p.dataset.i)); stop(); });
-    p.addEventListener('focus', () => { show(Number(p.dataset.i)); stop(); });
+    p.addEventListener('click', (e) => { e.preventDefault(); show(Number(p.dataset.i)); loop.restart(); });
+    p.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') show(Number(p.dataset.i)); });
+    p.addEventListener('focus', () => show(Number(p.dataset.i)));
   });
-  gridEl.addEventListener('mouseenter', stop);
-  gridEl.addEventListener('mouseleave', start);
-  gridEl.addEventListener('focusin', stop);
-  gridEl.addEventListener('focusout', start);
   if (reduced.matches) gridEl.classList.add('is-static');
-  show(quiet ? i : 0);
-  start();
+  show(0);
+  loop.sync();
 }
