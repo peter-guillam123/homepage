@@ -28,6 +28,12 @@ and the latest posts from every news live blog, with a hierarchy (your front's s
 other fronts' medium, the rest small), a taste of each post, and a "Less" button on every item
 that hides a blog, subject or section and remembers locally. Its data is `data/wire.json`.
 
+## Slow
+
+A third page, `slow.html`: features, interviews, recipes, reviews and picture galleries from the
+last couple of days, outside the news, as one column of big pictures. Series as bubbles to pick
+from, a Keep button on everything, kept locally. Its data is `data/slow.json`.
+
 ## Data
 
 `scripts/build-snapshot.mjs` fetches from the Guardian Content API and writes
