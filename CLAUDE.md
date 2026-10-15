@@ -23,6 +23,8 @@ No Ophan, no personalisation beyond what the browser remembers locally.
 - `js/places.js` maps the Guardian's country tags to coordinates for the world map.
 - `scripts/brief.mjs` writes the brief: Claude if `ANTHROPIC_API_KEY` is set, otherwise
   stitched headlines. The page says which.
+- `js/wire-data.js` builds `data/wire.json` for the wire page (`wire.html`, `js/wire.js`): news
+  articles and live blog posts from the last 24 hours.
 - `data/snapshot.json` is committed. `data/world-dots.json` is the dot map, built once from
   world-atlas with `scripts/build-world-dots.mjs`.
 - No build step for the site. Vanilla JS modules, one stylesheet, two Google fonts.

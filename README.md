@@ -21,6 +21,13 @@ chooses eight pieces and says why, and it ends.
 - **Off the front.** Deeply read, from a series, a quieter piece.
 - **The end.** That's the day.
 
+## The wire
+
+A second page, `wire.html`: news only, newest first. Every news article from the last 24 hours
+and the latest posts from every news live blog, with a hierarchy (your front's stories big,
+other fronts' medium, the rest small), a taste of each post, and a "Less" button on every item
+that hides a blog, subject or section and remembers locally. Its data is `data/wire.json`.
+
 ## Data
 
 `scripts/build-snapshot.mjs` fetches from the Guardian Content API and writes

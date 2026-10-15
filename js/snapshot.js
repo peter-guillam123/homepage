@@ -72,12 +72,25 @@ function compact(r) {
   };
 }
 
-function trimWords(s, max) {
+export function trimWords(s, max) {
   if (s.length <= max) return s;
   return s.slice(0, max).replace(/\s+\S*$/, '') + '…';
 }
 
-function stripHtml(s) { return s.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(); }
+export function stripHtml(s) { return s.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(); }
+
+// What a live blog is about, in a word or two: the headline's suffix ("– UK politics"),
+// else its first specific tag, else its section.
+export function blogTopic(blog) {
+  const keywords = (blog.tags || []).filter(t => t.type === 'keyword');
+  const generic = (t) => { const [a, b] = t.id.split('/'); return a === b || GENERIC_TAGS.has(t.id); };
+  const topicTag = keywords.find(t => !generic(t));
+  const headline = (blog.fields && blog.fields.headline) || blog.webTitle;
+  const suffix = headline.match(/\s[–-]\s([^–-]+?)\s*$/);
+  let topic = suffix ? suffix[1].replace(/\b(live|as it happened|latest( news| updates)?)\b/gi, '').replace(/\s+/g, ' ').trim() : '';
+  if (!topic) topic = topicTag ? topicTag.webTitle : blog.sectionName;
+  return topic.charAt(0).toUpperCase() + topic.slice(1);
+}
 
 export async function buildSnapshot({ fetchJson, apiKey = null, now = new Date(), log = () => {} }) {
   const q = (path, params) => {
@@ -136,14 +149,7 @@ export async function buildSnapshot({ fetchJson, apiKey = null, now = new Date()
   });
   const ticker = [];
   for (const blog of live.response.results) {
-    const keywords = (blog.tags || []).filter(t => t.type === 'keyword');
-    const generic = (t) => { const [a, b] = t.id.split('/'); return a === b || GENERIC_TAGS.has(t.id); };
-    const topicTag = keywords.find(t => !generic(t));
-    const headline = (blog.fields && blog.fields.headline) || blog.webTitle;
-    const suffix = headline.match(/\s[–-]\s([^–-]+?)\s*$/);
-    let topic = suffix ? suffix[1].replace(/\b(live|as it happened|latest( news| updates)?)\b/gi, '').replace(/\s+/g, ' ').trim() : '';
-    if (!topic) topic = topicTag ? topicTag.webTitle : blog.sectionName;
-    topic = topic.charAt(0).toUpperCase() + topic.slice(1);
+    const topic = blogTopic(blog);
     const isLive = Boolean(blog.fields && blog.fields.liveBloggingNow === 'true');
     const blocks = (blog.blocks && blog.blocks.requestedBodyBlocks && blog.blocks.requestedBodyBlocks['body:key-events']) || [];
     for (const b of blocks) {
