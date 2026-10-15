@@ -35,7 +35,8 @@ No Ophan, no personalisation beyond what the browser remembers locally.
 
 - Keep the page short. The whole point is that it ends.
 - Every item says why it is there. Never hide the signal behind the choice.
-- Nothing leaves the browser. The "What this page knows" panel must list everything stored.
+- Nothing leaves the browser. The "Yours" page (`yours.html`, `js/yours.js`) must list everything
+  stored, with a way to change each thing. `js/keep.js` is the shared Keep button.
 - Keyboard, screen reader, reduced motion and phone are the minimum, not extras.
 - Update `about.html`'s diary with each significant change, newest first.
 

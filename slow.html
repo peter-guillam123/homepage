@@ -23,7 +23,7 @@
       <a href="wire.html">The wire</a>
       <a href="slow.html" aria-current="page">Slow</a>
     </nav>
-    <button type="button" class="ghost" id="knows-open">What this page knows</button>
+    <a class="yours-link" href="yours.html">Yours<span class="yours-count" hidden></span></a>
   </div>
 </header>
 
@@ -54,17 +54,6 @@
   </div>
 </footer>
 
-<dialog id="knows" aria-labelledby="knows-h">
-  <form method="dialog" class="knows-form">
-    <h2 id="knows-h">What this page knows</h2>
-    <p class="muted">All of it is stored in your browser, and only there. There is no account, no cookie and nothing is sent anywhere.</p>
-    <dl id="knows-list" class="knows-list"></dl>
-    <h3 class="knows-sub">Kept for later</h3>
-    <ul id="kept" class="mutes"></ul>
-    <button type="submit" class="ghost" id="knows-close">Close</button>
-    <button type="button" class="danger" id="forget">Forget everything</button>
-  </form>
-</dialog>
 
 <script type="module" src="js/slow.js"></script>
 </body>

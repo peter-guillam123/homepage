@@ -6,6 +6,7 @@ import { store } from './store.js';
 import { EDITION_NAMES } from './choose.js';
 import { ago, esc } from './ticker.js';
 import { urlFor, tickerUrl } from './snapshot.js';
+import { keepButton, wireKeep, updateHeaderCount } from './keep.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -41,10 +42,8 @@ function wire() {
     render();
   }));
   $('#more').addEventListener('click', () => { state.shown += BATCH; renderList(); });
-  $('#knows-open').addEventListener('click', openKnows);
-  $('#manage').addEventListener('click', openKnows);
-  $('#knows-close').addEventListener('click', () => $('#knows').close());
-  $('#forget').addEventListener('click', () => { store.forget(); location.reload(); });
+  wireKeep(document, (id) => state.data.articles.find(a => a.id === id));
+  updateHeaderCount();
   document.addEventListener('click', (e) => {
     const less = e.target.closest('[data-mute]');
     if (less) {
@@ -53,15 +52,6 @@ function wire() {
       store.set({ mutes: state.mutes });
       less.closest('details')?.removeAttribute('open');
       render();
-      return;
-    }
-    const unmute = e.target.closest('[data-unmute]');
-    if (unmute) {
-      const [kind, value] = [unmute.dataset.unmute, unmute.dataset.value];
-      state.mutes[kind] = state.mutes[kind].filter(v => v !== value);
-      store.set({ mutes: state.mutes });
-      render();
-      renderMutes();
       return;
     }
     const fold = e.target.closest('[data-unfold]');
@@ -175,7 +165,7 @@ function renderList() {
         <h2><a href="${urlFor(a.id)}" data-id="${esc(a.id)}">${esc(a.title)}</a></h2>
         ${a.tier === 1 && a.thumb ? `<img class="w-pic" loading="lazy" src="${esc(a.thumb)}" alt="" width="500" height="300">` : ''}
         ${a.tier <= 2 && a.trail ? `<p class="w-trail">${esc(a.trail)}</p>` : ''}
-        ${a.tier <= 2 ? `<p class="w-foot">${a.byline ? esc(a.byline) : ''}${a.byline && m ? ' · ' : ''}${m}</p>` : ''}
+        <p class="w-foot">${a.tier <= 2 && a.byline ? esc(a.byline) : ''}${a.tier <= 2 && a.byline && m ? ' · ' : ''}${a.tier <= 2 ? m : ''}${keepButton(a, 'keep-small')}</p>
       </div>
       ${a.tier === 2 && a.thumb ? `<img class="w-thumb" loading="lazy" src="${esc(a.thumb)}" alt="" width="140" height="84">` : ''}
       ${less(opts)}
@@ -203,30 +193,5 @@ function renderList() {
   }
 }
 
-function openKnows() {
-  const d = store.get();
-  const rows = [
-    ['Edition', EDITION_NAMES[state.edition]],
-    ['Last visit before this one', state.visit.last ? fmtWhen.format(new Date(state.visit.last)) : 'none, this is the first'],
-    ['Showing', [state.show.articles && 'articles', state.show.posts && 'live blog posts'].filter(Boolean).join(' and ')],
-    ['Pieces you opened from here', String(Object.keys(d.opened || {}).length || 'none yet')],
-  ];
-  $('#knows-list').innerHTML = rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
-  renderMutes();
-  $('#knows').showModal();
-}
-
-function renderMutes() {
-  const m = state.mutes;
-  const b = state.data.blogs;
-  const rows = [
-    ...m.blogs.map(v => ({ kind: 'blogs', value: v, label: `Posts from ${b[v] ? b[v].topic + ' live' : v}` })),
-    ...m.topics.map(v => ({ kind: 'topics', value: v, label: v })),
-    ...m.sections.map(v => ({ kind: 'sections', value: v, label: `The ${v.replace(/-/g, ' ')} section` })),
-  ];
-  $('#mutes').innerHTML = rows.length
-    ? rows.map(r => `<li><span>${esc(r.label)}</span><button type="button" class="linklike" data-unmute="${r.kind}" data-value="${esc(r.value)}">Show again</button></li>`).join('')
-    : '<li class="muted">Nothing yet. Each item has a "Less" button.</li>';
-}
 
 setInterval(() => $$('[data-time]').forEach(el => { el.textContent = ago(el.dataset.time); }), 30000);

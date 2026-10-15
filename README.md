@@ -34,6 +34,12 @@ A third page, `slow.html`: features, interviews, recipes, reviews and picture ga
 last couple of days, outside the news, as one column of big pictures. Series as bubbles to pick
 from, a Keep button on everything, kept locally. Its data is `data/slow.json`.
 
+## Yours
+
+`yours.html` is everything the site remembers, in one place: what you kept (a reading list,
+with pictures), what you muted on the wire, the basics, and one button to forget it all.
+Keep is a button on every piece on every page. Nothing leaves the browser.
+
 ## Data
 
 `scripts/build-snapshot.mjs` fetches from the Guardian Content API and writes

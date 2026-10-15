@@ -1,22 +1,22 @@
 // Slow: features, pictures and series, outside the news. One column of big pictures,
 // newest first, with the series as a row of bubbles to pick from and a Keep button on
-// everything. Kept pieces live in the browser and are listed in "What this page knows".
+// everything. Kept pieces live in the browser and are listed on the Yours page.
 import { store } from './store.js';
 import { ago, esc } from './ticker.js';
 import { urlFor } from './snapshot.js';
+import { keepButton, wireKeep, updateHeaderCount } from './keep.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const fmtDay = new Intl.DateTimeFormat('en-GB', { weekday: 'long' });
 const BATCH = 12;
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-const state = { data: null, filter: null, kept: {}, items: [], shown: 0 };
+const state = { data: null, filter: null, items: [], shown: 0 };
 
 init().catch(err => { console.error(err); $('#status').textContent = 'Slow could not load its data. Try again in a moment.'; $('#status').hidden = false; });
 
 async function init() {
   store.visit();
-  state.kept = store.get().kept || {};
   state.data = await fetch('data/slow.json').then(r => r.json());
   wire();
   renderBubbles();
@@ -26,22 +26,11 @@ async function init() {
 
 function wire() {
   $('#more').addEventListener('click', () => { state.shown += BATCH; renderList(true); });
-  $('#knows-open').addEventListener('click', openKnows);
-  $('#knows-close').addEventListener('click', () => $('#knows').close());
-  $('#forget').addEventListener('click', () => { store.forget(); location.reload(); });
+  wireKeep(document, (id) => state.data.items.find(it => it.id === id));
+  updateHeaderCount();
   document.addEventListener('click', (e) => {
     const bubble = e.target.closest('[data-series]');
     if (bubble) { state.filter = state.filter === bubble.dataset.series ? null : bubble.dataset.series; renderBubbles(); render(); window.scrollTo({ top: $('#slow').offsetTop - 80, behavior: reduced.matches ? 'auto' : 'smooth' }); return; }
-    const keep = e.target.closest('[data-keep]');
-    if (keep) {
-      const id = keep.dataset.keep;
-      if (state.kept[id]) delete state.kept[id]; else state.kept[id] = Date.now();
-      store.set({ kept: state.kept });
-      $$(`[data-keep="${CSS.escape(id)}"]`).forEach(b => { b.setAttribute('aria-pressed', String(Boolean(state.kept[id]))); b.querySelector('span').textContent = state.kept[id] ? 'Kept' : 'Keep'; });
-      return;
-    }
-    const unkeep = e.target.closest('[data-unkeep]');
-    if (unkeep) { delete state.kept[unkeep.dataset.unkeep]; store.set({ kept: state.kept }); renderKept(); render(); return; }
     const nav = e.target.closest('[data-frame]');
     if (nav) {
       const strip = nav.closest('.gallery').querySelector('.frames');
@@ -104,7 +93,6 @@ function dayLabel(iso) {
 }
 
 function card(it) {
-  const kept = Boolean(state.kept[it.id]);
   const who = it.series || it.section;
   const minutes = it.words ? `${Math.max(1, Math.round(it.words / 230))} min read` : '';
   const picture = it.type === 'gallery' ? gallery(it) : `<a class="pic" href="${urlFor(it.id)}" data-id="${esc(it.id)}" tabindex="-1" aria-hidden="true">
@@ -117,7 +105,7 @@ function card(it) {
       <h2><a href="${urlFor(it.id)}" data-id="${esc(it.id)}">${esc(it.title)}</a>${it.stars ? ` <span class="stars" aria-label="${it.stars} stars">${'★'.repeat(it.stars)}<span class="stars-off">${'★'.repeat(5 - it.stars)}</span></span>` : ''}</h2>
       ${it.trail ? `<p class="s-trail">${esc(it.trail)}</p>` : ''}
       <p class="s-foot">${it.byline ? `<span>${esc(it.byline)}</span>` : ''}${minutes ? `<span>${minutes}</span>` : ''}${it.loved ? `<span class="s-loved">Readers stayed with this</span>` : ''}
-        <button type="button" class="keep" data-keep="${esc(it.id)}" aria-pressed="${kept}"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 1h10v14l-5-4-5 4z" fill="currentColor"/></svg><span>${kept ? 'Kept' : 'Keep'}</span></button>
+        ${keepButton(it)}
       </p>
     </div>
   </li>`;
@@ -147,24 +135,5 @@ function watchFades() {
   $$('.s-card:not(.is-in)').forEach(c => io.observe(c));
 }
 
-function openKnows() {
-  const d = store.get();
-  const rows = [
-    ['Last visit before this one', d.previousVisit ? ago(new Date(d.previousVisit).toISOString()) : 'none, this is the first'],
-    ['Series you are looking at', state.filter ? state.data.series[state.filter].name : 'all of them'],
-    ['Pieces you opened from here', String(Object.keys(d.opened || {}).length || 'none yet')],
-  ];
-  $('#knows-list').innerHTML = rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
-  renderKept();
-  $('#knows').showModal();
-}
-
-function renderKept() {
-  const ids = Object.keys(state.kept).sort((a, b) => state.kept[b] - state.kept[a]);
-  const byId = Object.fromEntries(state.data.items.map(it => [it.id, it]));
-  $('#kept').innerHTML = ids.length
-    ? ids.map(id => `<li><a href="${urlFor(id)}">${esc(byId[id] ? byId[id].title : id)}</a><button type="button" class="linklike" data-unkeep="${esc(id)}">Let go</button></li>`).join('')
-    : '<li class="muted">Nothing yet. Each piece has a Keep button.</li>';
-}
 
 setInterval(() => $$('.s-ago').forEach(el => { el.textContent = ago(el.getAttribute('datetime')); }), 60000);

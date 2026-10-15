@@ -7,6 +7,7 @@ import { renderTicker, esc } from './ticker.js';
 import { renderWorld } from './world.js';
 import { store } from './store.js';
 import { CITIES } from './sun.js';
+import { keepButton, wireKeep, updateHeaderCount } from './keep.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -85,15 +86,8 @@ function wireControls() {
     renderWorth();
   }));
   $$('[data-another]').forEach(btn => btn.addEventListener('click', () => { state.random[btn.dataset.another] = Math.random(); renderOff(); }));
-  $('#knows-open').addEventListener('click', () => { renderKnows(); $('#knows').showModal(); });
-  $('#knows-close').addEventListener('click', () => $('#knows').close());
-  $('#forget').addEventListener('click', () => { store.forget(); location.reload(); });
-  $('#key-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const key = $('#key-input').value.trim();
-    store.set({ capiKey: key || null });
-    location.reload();
-  });
+  wireKeep(document, (id) => state.snap.items[id] || state.chosen.find(p => p.id === id));
+  updateHeaderCount();
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[data-id]');
     if (a) { store.opened(a.dataset.id); a.closest('[data-id]')?.classList.add('is-opened'); }
@@ -189,6 +183,7 @@ function renderWorth() {
         <h3><a href="${urlFor(p.id)}" data-id="${esc(p.id)}">${esc(p.title)}</a></h3>
         ${p.trail ? `<p class="trail">${esc(p.trail)}</p>` : ''}
         <p class="why">${esc(reasonText(p, edition))}.<span class="opened-mark"> You opened this.</span></p>
+        ${keepButton(p, 'keep-small')}
       </div>
       ${p.thumb ? `<img class="thumb" loading="lazy" src="${esc(p.thumb)}" alt="" width="140" height="84">` : '<span class="thumb thumb-empty" aria-hidden="true"></span>'}
     </li>`).join('');
@@ -253,7 +248,8 @@ function renderOff() {
     el.innerHTML = `<p class="meta"><span class="kind">${esc(it.kind || 'Piece')}</span> <span class="sep">·</span> ${esc(it.section)}${m ? ` <span class="sep">·</span> ${m} min` : ''}</p>
       <h3><a href="${urlFor(id)}" data-id="${esc(id)}">${esc(it.title)}</a></h3>
       ${it.trail ? `<p class="trail">${esc(it.trail)}</p>` : ''}
-      <p class="why">${note(it)}</p>`;
+      <p class="why">${note(it)}</p>
+      ${keepButton({ ...it, id }, 'keep-small')}`;
   }
   function seeded(name) {
     if (state.random[name] == null) state.random[name] = Math.random();
@@ -269,17 +265,3 @@ function renderEnd() {
     : `Snapshot taken at ${fmtTime.format(taken)} your time. It refreshes every hour when the key is in place.`;
 }
 
-function renderKnows() {
-  const d = store.get();
-  const opened = Object.keys(d.opened || {});
-  const rows = [
-    ['Edition', EDITION_NAMES[state.edition]],
-    ['Last visit before this one', state.visit.last ? fmtWhen.format(new Date(state.visit.last)) : 'none, this is the first'],
-    ['Visits counted', String(d.visits || 1)],
-    ['Reading budget', state.budget ? `${state.budget} minutes` : 'none set'],
-    ['Pieces you opened from here', opened.length ? `${opened.length}` : 'none yet'],
-    ['Content API key', d.capiKey ? 'one is stored, used for live fetches' : 'none'],
-  ];
-  $('#knows-list').innerHTML = rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
-  $('#key-input').value = d.capiKey || '';
-}

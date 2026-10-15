@@ -27,6 +27,11 @@ export const store = {
     return { last: previousVisit, current: now };
   },
 
+  // The reading list. Each entry is a small record of the piece, enough to show it later.
+  keep(id, record) { const d = read(); const kept = d.kept || {}; kept[id] = record; write({ ...d, kept }); },
+  unkeep(id) { const d = read(); const kept = d.kept || {}; delete kept[id]; write({ ...d, kept }); },
+  isKept(id) { return Boolean((read().kept || {})[id]); },
+
   opened(id) {
     const data = read();
     const opened = data.opened || {};
