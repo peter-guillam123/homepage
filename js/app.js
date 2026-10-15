@@ -200,7 +200,7 @@ function renderWorth() {
 
 function renderDesks() {
   const { snap, edition, dots } = state;
-  const world = renderWorld($('#map'), $('#world-list'), dots, snap);
+  const world = renderWorld($('#world-grid'), dots, snap);
   const others = otherDesks(snap, edition);
   state.shownElsewhere = [...world.map(w => w.id), ...others.map(o => o.id)];
   $('#desks').innerHTML = others.map(o => `
@@ -211,34 +211,48 @@ function renderDesks() {
     </li>`).join('');
 }
 
+// Series readers come back for. Preferred first; any other series after, newest first.
+const LOVED_SERIES = ['lifeandstyle/series/a-moment-that-changed-me', 'lifeandstyle/series/experience', 'lifeandstyle/series/blind-date',
+  'lifeandstyle/series/how-we-met', 'news/series/the-long-read', 'lifeandstyle/series/tim-dowlings-weekend-column', 'food/series/comfort-eating-with-grace-dent',
+  'lifeandstyle/series/this-is-how-we-do-it', 'lifeandstyle/series/the-moment-i-knew', 'books/series/the-books-of-my-life', 'music/series/how-we-made',
+  'lifeandstyle/series/ask-annalisa-barbieri', 'lifeandstyle/series/you-be-the-judge', 'tv-and-radio/series/the-g2-interview', 'artanddesign/series/the-big-picture'];
+
 function renderOff() {
   const { snap, chosen } = state;
   const shown = new Set([...chosen.map(p => p.id), ...(state.shownElsewhere || [])]);
-  const chosenSections = new Set(chosen.map(p => p.sectionId));
-  const pickFrom = (list, seed) => list.length ? list[Math.floor(seeded(seed) * list.length)] : null;
+  const items = snap.items;
+  const readable = (id) => { const it = items[id]; return it && it.type === 'article' && it.kind !== 'Live' && !isShop(it); };
+  const nth = (list, name) => list.length ? list[Math.floor(seeded(name) * list.length)] : null;
 
-  const long = snap.pools.long.filter(id => !shown.has(id) && !NEAR.has(snap.items[id].sectionId) && snap.items[id].kind !== 'Review' && !isShop(snap.items[id]));
-  const quiet = snap.pools.quiet.filter(id => !shown.has(id) && !isShop(snap.items[id]));
-  const bySection = new Map();
-  for (const id of snap.day) { const it = snap.items[id]; bySection.set(it.sectionId, (bySection.get(it.sectionId) || 0) + 1); }
-  const afield = snap.day.filter(id => {
-    const it = snap.items[id];
-    return it.type === 'article' && it.pillar !== 'news' && it.kind !== 'Live' && (it.words || 0) >= 500 && !chosenSections.has(it.sectionId) && !NEAR.has(it.sectionId) && !shown.has(id) && !isShop(it);
-  }).sort((a, b) => bySection.get(snap.items[a].sectionId) - bySection.get(snap.items[b].sectionId)).slice(0, 40);
+  // Deeply read, anywhere, but not already on this page. Longer first.
+  const deep = [...new Set(Object.values(snap.editions).flatMap(e => e.deeplyRead))]
+    .filter(id => readable(id) && !shown.has(id) && (items[id].words || 0) >= 400)
+    .sort((a, b) => (items[b].words || 0) - (items[a].words || 0));
 
-  card('surprise', pickFrom(long, 'surprise'), 'A long read from the past week, picked at random.');
-  card('afield', pickFrom(afield, 'afield'), 'From a section that is not on this page today.');
-  card('quiet', pickFrom(quiet, 'quiet'), 'Nothing in it that counts as news.');
+  // The latest from a series, loved ones first.
+  const pool = [...new Set([...snap.day, ...snap.pools.quiet, ...snap.pools.long])];
+  const dull = /newsletter|briefing|quiz|podcast|weekly|tonight|of the day|review/i;
+  const series = pool.filter(id => readable(id) && !shown.has(id) && items[id].seriesId && !['Editorial', 'Letters', 'Comment', 'Review', 'Obituary'].includes(items[id].kind) && !dull.test(items[id].series))
+    .sort((a, b) => {
+      const la = LOVED_SERIES.indexOf(items[a].seriesId), lb = LOVED_SERIES.indexOf(items[b].seriesId);
+      const ra = la < 0 ? 99 : la, rb = lb < 0 ? 99 : lb;
+      return ra - rb || new Date(items[b].published) - new Date(items[a].published);
+    });
+  const quiet = snap.pools.quiet.filter(id => !shown.has(id) && !isShop(items[id]) && items[id].kind !== 'Obituary');
+
+  card('deep', deep.length ? deep[Math.floor(seeded('deep') * Math.min(deep.length, 5))] : null, (it) => `Readers stayed with this one. It is on the deeply read list and nowhere else on this page.`);
+  card('series', series.length ? series[Math.floor(seeded('series') * Math.min(series.length, 6))] : null, (it) => `The latest in the series <strong>${esc(it.series)}</strong>.`);
+  card('quiet', nth(quiet, 'quiet'), () => 'Nothing in it that counts as news.');
 
   function card(name, id, note) {
     const el = $(`#off-${name} .card-body`);
-    const it = id && snap.items[id];
+    const it = id && items[id];
     if (!it) { el.innerHTML = `<p class="muted">Nothing in the pool today.</p>`; return; }
     const m = readingMinutes(it.words);
     el.innerHTML = `<p class="meta"><span class="kind">${esc(it.kind || 'Piece')}</span> <span class="sep">·</span> ${esc(it.section)}${m ? ` <span class="sep">·</span> ${m} min` : ''}</p>
       <h3><a href="${urlFor(id)}" data-id="${esc(id)}">${esc(it.title)}</a></h3>
       ${it.trail ? `<p class="trail">${esc(it.trail)}</p>` : ''}
-      <p class="why">${note}</p>`;
+      <p class="why">${note(it)}</p>`;
   }
   function seeded(name) {
     if (state.random[name] == null) state.random[name] = Math.random();

@@ -63,6 +63,8 @@ function compact(r) {
     kind: toneOf(tags),
     place: placeOf(tags.map(t => t.id), r.sectionId) || undefined,
     topic: topicOf(tags, r.sectionName),
+    series: (tags.find(t => t.type === 'series') || {}).webTitle,
+    seriesId: (tags.find(t => t.type === 'series') || {}).id,
     longRead: tags.some(t => t.id === 'news/series/the-long-read'),
     trail: f.trailText ? stripHtml(f.trailText).slice(0, 220) : undefined,
     byline: f.byline || undefined,
