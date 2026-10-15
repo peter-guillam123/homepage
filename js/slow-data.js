@@ -67,10 +67,12 @@ export async function buildSlow({ fetchJson, apiKey = null, now = new Date(), sn
   log('slow: galleries');
   const gal = await q('/search', {
     'type': 'gallery', 'from-date': iso(threeDays), 'page-size': '30', 'order-by': 'newest',
-    'show-fields': 'headline,trailText,byline', 'show-tags': 'series', 'show-elements': 'image',
+    'show-fields': 'headline,trailText,byline,thumbnail', 'show-tags': 'series', 'show-elements': 'image',
   });
+  log(`slow: galleries returned ${gal.response.results.length}, with elements ${gal.response.results.filter(r => (r.elements || []).length).length}`);
   for (const r of gal.response.results) {
-    const frames = (r.elements || []).filter(e => e.type === 'image').map(e => pickAsset(e)).filter(Boolean).slice(0, 12);
+    let frames = (r.elements || []).filter(e => e.type === 'image').map(e => pickAsset(e)).filter(Boolean).slice(0, 12);
+    if (!frames.length && r.fields && r.fields.thumbnail) frames = [{ src: r.fields.thumbnail, w: 500, h: 300 }];
     if (!frames.length) continue;
     const f = r.fields || {};
     const series = (r.tags || []).find(t => t.type === 'series');
