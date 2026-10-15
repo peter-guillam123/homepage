@@ -34,10 +34,13 @@ for (const obj of Object.values(topo.objects)) {
   }
 }
 
+// Ray casting. Edges that jump across the antimeridian (Fiji, Chukotka) are skipped:
+// treated as real, they paint a line of land across an ocean.
 function inRing(pt, r) {
   let inside = false;
   for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
     const [xi, yi] = r[i], [xj, yj] = r[j];
+    if (Math.abs(xi - xj) > 180) continue;
     if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) inside = !inside;
   }
   return inside;
