@@ -14,7 +14,7 @@ const FIELDS = 'headline,trailText,thumbnail,wordcount,byline,lastModified';
 const TAGS = 'tone,type,series,keyword';
 
 // Tags too broad to name a live blog by.
-const GENERIC_TAGS = new Set(['world/europe-news', 'football/europeanfootball', 'us-news/us-politics', 'politics/politics', 'uk/uk', 'world/world', 'business/economics', 'sport/sport']);
+const GENERIC_TAGS = new Set(['world/europe-news', 'football/europeanfootball', 'us-news/us-politics', 'politics/politics', 'uk/uk', 'world/world', 'business/economics', 'sport/sport', 'culture/culture', 'lifeandstyle/lifeandstyle', 'tv-and-radio/tv-and-radio', 'society/society', 'world/americas', 'world/africa', 'world/asia-pacific', 'world/middleeast', 'us-news/trump-administration']);
 
 const QUIET_SECTIONS = [
   'lifeandstyle', 'food', 'travel', 'books', 'film', 'music', 'games',
@@ -41,6 +41,13 @@ function toneOf(tags = []) {
     || null;
 }
 
+function topicOf(tags, sectionName) {
+  const keywords = tags.filter(t => t.type === 'keyword');
+  const generic = (t) => { const [a, b] = t.id.split('/'); return a === b || GENERIC_TAGS.has(t.id) || t.webTitle === sectionName; };
+  const t = keywords.find(k => !generic(k));
+  return t ? t.webTitle : undefined;
+}
+
 function compact(r) {
   const f = r.fields || {};
   const tags = r.tags || [];
@@ -55,6 +62,7 @@ function compact(r) {
     words: f.wordcount ? Number(f.wordcount) : null,
     kind: toneOf(tags),
     place: placeOf(tags.map(t => t.id), r.sectionId) || undefined,
+    topic: topicOf(tags, r.sectionName),
     longRead: tags.some(t => t.id === 'news/series/the-long-read'),
     trail: f.trailText ? stripHtml(f.trailText).slice(0, 220) : undefined,
     byline: f.byline || undefined,
@@ -122,7 +130,7 @@ export async function buildSnapshot({ fetchJson, apiKey = null, now = new Date()
   log('ticker: live blog key events');
   const live = await q('/search', {
     'tag': 'tone/minutebyminute', 'from-date': iso(dayAgo), 'page-size': '30',
-    'order-by': 'newest', 'show-blocks': 'body:key-events', 'show-fields': 'headline,liveBloggingNow', 'show-tags': 'keyword',
+    'order-by': 'newest', 'show-blocks': 'body:key-events', 'show-fields': 'headline,liveBloggingNow,lastModified', 'show-tags': 'keyword',
   });
   const ticker = [];
   for (const blog of live.response.results) {
@@ -149,6 +157,7 @@ export async function buildSnapshot({ fetchJson, apiKey = null, now = new Date()
         block: b.id,
         topic,
         live: isLive,
+        updated: (blog.fields && blog.fields.lastModified) || blog.webPublicationDate,
         section: blog.sectionName,
         pillar: (blog.pillarName || '').toLowerCase() || null,
       });
@@ -186,5 +195,6 @@ export async function buildSnapshot({ fetchJson, apiKey = null, now = new Date()
     pools,
     items,
     brief: null,
+    labels: null,
   };
 }
