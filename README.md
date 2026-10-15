@@ -17,9 +17,16 @@ chooses eight pieces and says why, and it ends.
   viewed, on how many fronts. A time budget trims the list to fit.
 - **Around the world.** Ten stories from ten places on an annotated dot map, placed by the
   Guardian's own country tags. The same for every edition.
-- **From the other desks.** The top story each of the other four editions runs that yours does not.
+- **From the other editions.** For each other edition, the top story it runs that no other front does.
 - **Off the front.** Deeply read, from a series, a quieter piece.
 - **The end.** That's the day.
+
+## The wire
+
+A second page, `wire.html`: news only, newest first. Every news article from the last 24 hours
+and the latest posts from every news live blog, with a hierarchy (your front's stories big,
+other fronts' medium, the rest small), a taste of each post, and a "Less" button on every item
+that hides a blog, subject or section and remembers locally. Its data is `data/wire.json`.
 
 ## Data
 

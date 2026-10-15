@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The wire · Daylight</title>
+<meta name="description" content="News only, newest first: every article and the latest posts from every live blog, since this time yesterday.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,0..100;1,9..144,300..700,0..100&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23e8a33d'/%3E%3C/svg%3E">
+</head>
+<body class="page-wire">
+<a class="skip" href="#wire">Skip to the wire</a>
+
+<header class="top">
+  <div class="wrap top-row">
+    <p class="wordmark"><a href="./">Daylight</a> <span class="strap">The Guardian, once a day</span></p>
+    <nav class="tabs" aria-label="Pages">
+      <a href="./">Today</a>
+      <a href="wire.html" aria-current="page">The wire</a>
+    </nav>
+    <nav class="editions" id="editions" aria-label="Edition">
+      <button type="button" data-edition="uk" aria-pressed="false">UK</button>
+      <button type="button" data-edition="us" aria-pressed="false">US</button>
+      <button type="button" data-edition="au" aria-pressed="false">Australia</button>
+      <button type="button" data-edition="europe" aria-pressed="false">Europe</button>
+      <button type="button" data-edition="international" aria-pressed="false">International</button>
+    </nav>
+    <button type="button" class="ghost" id="knows-open">What this page knows</button>
+  </div>
+</header>
+
+<p id="status" class="wrap notice" hidden></p>
+
+<main>
+  <section class="wire-head">
+    <div class="wrap">
+      <p class="eyebrow">The wire</p>
+      <h1 id="wire-h">Everything, as it came</h1>
+      <p class="since" id="since"></p>
+      <div class="wire-controls" role="group" aria-label="What to show">
+        <button type="button" data-show="articles" aria-pressed="true">Articles</button>
+        <button type="button" data-show="posts" aria-pressed="true">Live blog posts</button>
+        <span class="wire-hidden" id="hidden-note" hidden><span id="hidden-n">0</span> hidden by your choices · <button type="button" class="linklike" id="manage">manage</button></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="wire-section" aria-labelledby="wire-h">
+    <div class="wrap">
+      <ol class="wire" id="wire"></ol>
+      <p class="wire-more"><button type="button" class="ghost" id="more" hidden>Show the next batch</button></p>
+      <p class="wire-end muted" id="wire-end"></p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><a href="about.html">About Daylight</a> · A sketch by Chris Moran, built with Claude. Not a Guardian product. Stories link to theguardian.com.</p>
+  </div>
+</footer>
+
+<dialog id="knows" aria-labelledby="knows-h">
+  <form method="dialog" class="knows-form">
+    <h2 id="knows-h">What this page knows</h2>
+    <p class="muted">All of it is stored in your browser, and only there. There is no account, no cookie and nothing is sent anywhere.</p>
+    <dl id="knows-list" class="knows-list"></dl>
+    <h3 class="knows-sub">Things you asked to see less of</h3>
+    <ul id="mutes" class="mutes"></ul>
+    <button type="submit" class="ghost" id="knows-close">Close</button>
+    <button type="button" class="danger" id="forget">Forget everything</button>
+  </form>
+</dialog>
+
+<script type="module" src="js/wire.js"></script>
+</body>
+</html>

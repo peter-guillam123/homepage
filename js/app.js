@@ -202,13 +202,13 @@ function renderWorth() {
 function renderDesks() {
   const { snap, edition, dots } = state;
   const world = renderWorld($('#world-grid'), dots, snap);
-  const others = otherDesks(snap, edition);
+  const others = otherDesks(snap, edition, new Set([...state.chosen.map(p => p.id), ...world.map(w => w.id)]));
   state.shownElsewhere = [...world.map(w => w.id), ...others.map(o => o.id)];
   $('#desks').innerHTML = others.map(o => `
     <li class="desk p-${o.pillar || 'none'}">
-      <p class="desk-h">${EDITION_NAMES[o.edition]} <span class="muted">· ${esc(CITIES[o.edition].name)}</span></p>
+      <p class="desk-h">${EDITION_NAMES[o.edition]} edition</p>
       <h3><a href="${urlFor(o.id)}" data-id="${esc(o.id)}">${esc(o.title)}</a></h3>
-      <p class="mark${o.elsewhere.length ? '' : ' mark-only'}">${o.elsewhere.length ? 'also on the ' + o.elsewhere.map(e => EDITION_NAMES[e]).join(' and ') + ' front' : 'only on this front'}</p>
+      <p class="mark${o.elsewhere.length ? '' : ' mark-only'}">${o.elsewhere.length ? 'also on the ' + o.elsewhere.map(e => EDITION_NAMES[e]).join(' and ') + ' front' : 'only on this front, and not above'}</p>
     </li>`).join('');
 }
 
