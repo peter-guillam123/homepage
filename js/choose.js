@@ -116,11 +116,25 @@ export function otherDesks(snap, edition) {
   return out;
 }
 
-// Twelve events shared fairly across the day's live blogs: the newest from each,
+// Only blogs that are live now, or closed within the last hour, count as still moving.
+// If there are none, the most recently closed one stands in, and the page says so.
+export function movingBlogs(ticker, now = Date.now(), graceMinutes = 60) {
+  const byBlog = new Map();
+  for (const t of ticker) if (!byBlog.has(t.blogId)) byBlog.set(t.blogId, t);
+  const all = [...byBlog.values()];
+  const last = (t) => new Date(t.updated || t.time).getTime();
+  const moving = all.filter(t => t.live || now - last(t) <= graceMinutes * 60000);
+  if (moving.length) return { ids: new Set(moving.map(t => t.blogId)), fallback: false };
+  const latest = all.sort((a, b) => last(b) - last(a))[0];
+  return { ids: new Set(latest ? [latest.blogId] : []), fallback: true };
+}
+
+// Twelve events shared fairly across the moving blogs: the newest from each,
 // then the second newest, and so on, until there are twelve.
-export function pickTicker(ticker, n = 12) {
+export function pickTicker(ticker, n = 12, only = null) {
   const byBlog = new Map();
   for (const t of ticker) {
+    if (only && !only.has(t.blogId)) continue;
     if (!byBlog.has(t.blogId)) byBlog.set(t.blogId, []);
     byBlog.get(t.blogId).push(t);
   }
